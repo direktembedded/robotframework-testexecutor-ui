@@ -1,0 +1,42 @@
+"""
+
+Copyright (c) 2020 Sipke Vriend
+Licensed under BSD-3-Clause, refer LICENSE
+"""
+
+
+class IPCTest:
+    def __init__(self, test, result=None):
+        self.name = test
+        self.result = result
+    name = None
+    result = None
+
+
+class IPCMessage:
+    def __init__(self, title, message=None):
+        self.title = title
+        self.message = message
+    title = None
+    message = None
+
+
+class TestExecutorIPC:
+    def __init__(self, op, data=None):
+        self.op = op
+        self.data = data
+    op = None
+    data = None
+
+
+class IPCTypes:
+    def __init__(self):
+        pass
+    FEEDBACK = "feedback"
+    PAUSE_EXECUTION = "pause_execution"
+    START_SUITE = "start_suite"
+    END_SUITE = "end_suite"
+    START_TEST = "start_test"
+    END_TEST = "end_test"
+    LOG_MESSAGE = "log_message"
+    EXECUTE_MANUAL_STEP = "execute_manual_step"

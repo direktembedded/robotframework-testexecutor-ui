@@ -1,0 +1,11 @@
+.idea
+**/__pycache__/*
+venv
+
+build/*
+dist/*
+robot-testexecutor.egg-info/*
+
+log.html
+report.html
+output.xml
