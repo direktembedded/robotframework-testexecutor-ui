@@ -15,7 +15,7 @@ from testexecutor.model.ResultModel import ResultModel
 from .RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
 from .TestExecutorIPCListener import TestExecutorIPCListener
-from .TestExecutorIPC import TestExecutorIPC, IPCTypes
+from .TestExecutorIPC import TestExecutorIPC, IPCTypes, IPCCommand, IPCCommands
 from .proxy.TestExecutorLogger import TestExecutorLogger
 
 
@@ -45,10 +45,12 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
     def start(self):
         if not self._runner:
             import datetime
-            print("start", datetime.datetime.now())
             #self._runner = threading.Thread(target=self._thread_run, args=(self.exampletest,))
             self._runner = threading.Thread(target=self._process_run, args=(self.exampletest,))
             self._runner.start()
+        else:
+            self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._id_data.getValues()))
+        
 
     def _thread_run(self, testsuite):
         # TODO possibly temporary entry/start method.
@@ -62,12 +64,14 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def _process_run(self, testsuite):
         import datetime
-        parent_conn, child_conn = Pipe()
-        p = RobotProcessController(args=(testsuite, child_conn, self._get_variables()))
+        self.parent_conn, child_conn = Pipe()
+        p = RobotProcessController(child_conn, testsuite)
         p.start()
 
+        parent_conn = self.parent_conn
         self.running = True
         active_test = None
+        self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._id_data.getValues()))
         while p.is_alive() and self.running:
             if parent_conn.poll(1):
                 rc = parent_conn.recv()
@@ -103,6 +107,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 self.testCompleted(active_test, False)
             self.suitestate = TestSuiteModel.STATE_STOPPED
         self._runner = None
+        print("exited runner")
 
     def _get_variables(self):
         variables = []
@@ -123,7 +128,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def _stop_suite(self):
         #TODO tell robot run to stop
-        self.running = False
+        # we are not stopping process  -- self.running = False
+        pass
 
     def _clear_suite(self):
         self.clear()

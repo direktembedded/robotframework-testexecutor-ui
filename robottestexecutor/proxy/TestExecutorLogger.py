@@ -28,6 +28,19 @@ class TestExecutorLogger:
         #TODO Could send through the suite tests, so test results could be pre-populated
         pass
 
+    def end_suite(self, suite):
+        failed = [err for err in suite.tests if not err.passed]
+        if len(failed) > 0:
+            summary = ["{0}: {1}".format(t.name, t.message) for t in failed]
+            self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage("Failed", summary)))
+
     def message(self, msg):
-        self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(msg.level, msg.message)))
+        blacklist = ['Tests execution ended']
+        avoid = False
+        for item in blacklist:
+            if item in msg.message:
+                avoid = True
+                break
+        if not avoid:
+            self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(msg.level, msg.message)))
 

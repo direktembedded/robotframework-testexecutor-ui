@@ -42,3 +42,17 @@ class IPCTypes:
     END_TEST = "end_test"
     LOG_MESSAGE = "log_message"
     EXECUTE_MANUAL_STEP = "execute_manual_step"
+
+
+class IPCCommand:
+    def __init__(self, op, data={}):
+        self.op = op
+        self.data = data
+    op = None
+    data = {}
+
+
+class IPCCommands:
+    def __init__(self):
+        pass
+    EXECUTE_SUITE = "execute_suite"

@@ -52,5 +52,7 @@ class TestExecutorIPCListener():
                 self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(csuite, msg.message)))
 
     def close(self):
-        self.connection.close()
+        # We do not want to close the connection as we want the process to stay alive
+        # self.connection.close()
+        pass
 
