@@ -12,32 +12,11 @@ from robot.output import LOGGER
 from testexecutor.model.TestSuiteModel import TestSuiteModel
 from testexecutor.model.KeyValueModel import KeyValueModel, KeyValue
 from testexecutor.model.ResultModel import ResultModel
+from .RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
 from .TestExecutorIPCListener import TestExecutorIPCListener
 from .TestExecutorIPC import TestExecutorIPC, IPCTypes
 from .proxy.TestExecutorLogger import TestExecutorLogger
-
-
-
-def _process(testsuite, connection, instance, variables):
-    variables.append("CUSTOMDIALOGS:robottestexecutor.TestExecutorIPCDialogs")
-    listener = TestExecutorIPCListener(connection)
-    logger = TestExecutorLogger(connection)
-    LOGGER.register_logger(logger)
-    run(testsuite, listener=listener,
-        variable=variables,
-        prerunmodifier=["robottestexecutor.TestExecutorSuitePreRunModifier"],
-        console="none",
-        loglevel="INFO",
-        output="NONE",
-        report="NONE",
-        log="NONE"
-        )
-
-
-#output = "{0}-output.xml".format(instance),
-#report = "{0}-report.html".format(instance),
-#log = "{0}-log.html".format(instance)
 
 
 class TestExecutorController(TestSuiteModel, TestExecutorListener):
@@ -65,6 +44,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def start(self):
         if not self._runner:
+            import datetime
+            print("start", datetime.datetime.now())
             #self._runner = threading.Thread(target=self._thread_run, args=(self.exampletest,))
             self._runner = threading.Thread(target=self._process_run, args=(self.exampletest,))
             self._runner.start()
@@ -80,13 +61,11 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             )
 
     def _process_run(self, testsuite):
-        # TODO: Overall exception capture for system errors at this point
-        #print("_processrun", self._instance)
+        import datetime
         parent_conn, child_conn = Pipe()
-        p = Process(target=_process, args=(testsuite, child_conn, self._instance, self._get_variables()))
+        p = RobotProcessController(args=(testsuite, child_conn, self._get_variables()))
         p.start()
 
-        object_list = None
         self.running = True
         active_test = None
         while p.is_alive() and self.running:
