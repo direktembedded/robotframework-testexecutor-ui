@@ -12,13 +12,13 @@ config = '''{
 
     "proportion": {
       "title": 0.1,
-      "identification": 0.05,
+      "identification": 0.07,
       "instructions": 0.4,
       "status": 0.04
     },
 
     "results": {
-      "viewableCount": 8,
+      "viewableCount": 15,
       "color": "#e5e2e2",
       "item": {
         "proportion": {
