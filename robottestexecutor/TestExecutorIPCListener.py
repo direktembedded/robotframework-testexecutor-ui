@@ -39,8 +39,15 @@ class TestExecutorIPCListener():
         if "TestExecutorIPC" not in msg.message:
             ctest = BuiltIn().get_variable_value("${TEST NAME}")
             csuite = BuiltIn().get_variable_value("${SUITE NAME}")
+            logtest = BuiltIn().get_variable_value("${logtest}")
             if ctest:
-                self.connection.send(TestExecutorIPC(IPCTypes.FEEDBACK, IPCMessage(ctest, msg.message)))
+                if not logtest or (logtest == "feedback"):
+                    self.connection.send(TestExecutorIPC(IPCTypes.FEEDBACK, IPCMessage(ctest, msg.message)))
+                elif logtest == "both":
+                    self.connection.send(TestExecutorIPC(IPCTypes.FEEDBACK, IPCMessage(ctest, msg.message)))
+                    self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(ctest, msg.message)))
+                elif logtest == "central":
+                    self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(ctest, msg.message)))
             elif csuite:
                 self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(csuite, msg.message)))
 

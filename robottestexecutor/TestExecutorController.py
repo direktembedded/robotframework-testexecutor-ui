@@ -8,26 +8,32 @@ import threading
 from multiprocessing import Process, Pipe
 from robot import run
 from robot.libraries.BuiltIn import BuiltIn
+from robot.output import LOGGER
 from testexecutor.model.TestSuiteModel import TestSuiteModel
 from testexecutor.model.KeyValueModel import KeyValueModel, KeyValue
 from testexecutor.model.ResultModel import ResultModel
 from .TestExecutorListener import TestExecutorListener
 from .TestExecutorIPCListener import TestExecutorIPCListener
 from .TestExecutorIPC import TestExecutorIPC, IPCTypes
+from .proxy.TestExecutorLogger import TestExecutorLogger
 
 
 
 def _process(testsuite, connection, instance, variables):
     variables.append("CUSTOMDIALOGS:robottestexecutor.TestExecutorIPCDialogs")
-    run(testsuite, listener=TestExecutorIPCListener(connection),
+    listener = TestExecutorIPCListener(connection)
+    logger = TestExecutorLogger(connection)
+    LOGGER.register_logger(logger)
+    run(testsuite, listener=listener,
         variable=variables,
         prerunmodifier=["robottestexecutor.TestExecutorSuitePreRunModifier"],
         console="none",
-        loglevel="none",
+        loglevel = "none",
         output="NONE",
         report="NONE",
         log="NONE"
         )
+
 
 #output = "{0}-output.xml".format(instance),
 #report = "{0}-report.html".format(instance),
