@@ -69,15 +69,15 @@ class TestExecutorIPCDialogs:
                     default_error = "Manual step failed"
                 raise AssertionError(default_error)
 
-    def feedback(self, message):
-        """Displays feedback about the current running test
+    def log_to_suite(self):
+        BuiltIn().set_suite_variable("${logdestination}", "suite")
 
-        :param message: Feedback message to display against the current running test
-        :return:
-        """
-        connection = BuiltIn().get_variable_value("${connection}")
-        ctest = BuiltIn().get_variable_value("${TEST NAME}")
-        connection.send(TestExecutorIPC(IPCTypes.FEEDBACK, IPCMessage(ctest, message)))
+    def log_to_both(self):
+        BuiltIn().set_suite_variable("${logdestination}", "both")
+
+    def log_to_test(self):
+        BuiltIn().set_suite_variable("${logdestination}", "test")
+
 
 def _validate_user_input(value):
     if value is None:

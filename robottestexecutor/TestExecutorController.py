@@ -28,7 +28,7 @@ def _process(testsuite, connection, instance, variables):
         variable=variables,
         prerunmodifier=["robottestexecutor.TestExecutorSuitePreRunModifier"],
         console="none",
-        loglevel = "none",
+        loglevel="INFO",
         output="NONE",
         report="NONE",
         log="NONE"
@@ -110,6 +110,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 elif rc.op == IPCTypes.END_TEST:
                     self.testCompleted(rc.data.name, rc.data.result)
                     active_test = None
+                    if rc.data.message:
+                        self.feedback(rc.data.name, rc.data.message)
                 elif rc.op == IPCTypes.LOG_MESSAGE:
                     self.userInstructions(rc.data.title, rc.data.message, expectResponse=False)
                     #print("\nTEC log_message", rc.data.title, rc.data.message, "END\n")

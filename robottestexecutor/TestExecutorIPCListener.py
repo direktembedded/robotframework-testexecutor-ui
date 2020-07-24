@@ -29,29 +29,28 @@ class TestExecutorIPCListener():
 
     def end_test(self, name, result):
         #print("\nTestExecutorIPCListener.end_test", name.name, result.status, result.passed)
-        self.connection.send(TestExecutorIPC(IPCTypes.END_TEST, IPCTest(name.name, result.passed)))
+        self.connection.send(TestExecutorIPC(IPCTypes.END_TEST, IPCTest(name.name, result.passed, result.message)))
 
     def end_suite(self, name, result):
         #print("\nTestExecutorIPCListener.end_suite", name, result.endtime)
         self.connection.send(TestExecutorIPC(IPCTypes.END_SUITE, name.name))
 
     def log_message(self, msg):
-        if "TestExecutorIPC" not in msg.message:
+        if TestExecutorIPC.__name__ not in msg.message:
             ctest = BuiltIn().get_variable_value("${TEST NAME}")
             csuite = BuiltIn().get_variable_value("${SUITE NAME}")
-            logtest = BuiltIn().get_variable_value("${logtest}")
+            logdestination = BuiltIn().get_variable_value("${logdestination}")
             if ctest:
-                if not logtest or (logtest == "feedback"):
+                if not logdestination or (logdestination == "test"):
                     self.connection.send(TestExecutorIPC(IPCTypes.FEEDBACK, IPCMessage(ctest, msg.message)))
-                elif logtest == "both":
+                elif logdestination == "both":
                     self.connection.send(TestExecutorIPC(IPCTypes.FEEDBACK, IPCMessage(ctest, msg.message)))
                     self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(ctest, msg.message)))
-                elif logtest == "central":
+                elif logdestination == "suite":
                     self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(ctest, msg.message)))
             elif csuite:
                 self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(csuite, msg.message)))
 
     def close(self):
-        #print("\nTestExecutorIPCListener.close()")
         self.connection.close()
 

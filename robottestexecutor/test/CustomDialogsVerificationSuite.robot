@@ -14,31 +14,37 @@ Suite Setup      Run Keywords   Set Library Search Order    ${CUSTOMDIALOGS}  Di
 ...                             Set Log Level  INFO
 
 *** Test Cases ***
-Verify Custom Dialogs Library
-    [Tags]    DEBUG
-    Set Log Level  INFO
-    Feedback  A feedback keyword from a custom Dialogs Library
-    Pause Execution            Robot "Pause Execution" Key Word redirected to TestExecutor\nvia Custom Dialogs Library
-    Log    Now we will verify the Execute Manual Step key word
-    Execute Manual Step  Is it a full moon?\nPlease press yes to pass
-    Execute Manual Step  Is it a full moon?\nPlease press no to fail    The moon was not full, fail the test
+Manual Step
+    [Tags]    Dialogs
+    Pause Execution      This test will ask you to manually pass and then fail a test
+    Execute Manual Step  Is it a full moon?\nPlease press Yes to pass
+    Execute Manual Step  Is it not full moon?\nPlease press Yes to pass or No to fail    The moon was not full, fail the test
 
-Verify Second Time
-    [Tags]    DEBUG
-    Log   Another Log keyword from the listener
-    Pause Execution            Another example skips the pausing of execution
+Log Destination
+    [Tags]    Dialogs
+    Log To Suite
+    Log                  Change Logs to go to suite instruction window and then to test result feedback
+    Sleep                5
+    Log To Test
+    Log                  This logs to the test result feedback window
+    Sleep                5
+    FOR                  ${progress}  IN  10  20  30  40  50  100
+        Sleep            1
+        Log              ${progress}
+    END
 
-Verify Once More
-    [Tags]    DEBUG
-    Log    Something else
-    Pause Execution            Final example skips the pausing of execution
+Pausing Test
+    [Tags]    Dialogs
+    Log To Both
+    Pause Execution      Please press the button to complete this test
+    Log                  This test just paused and waited for you to press a button
+
+# Dialogs methods not implemented yet
 #    ${user} =     Get Selection From User    Select user  one  two  three
 #    Log    ${user}
 #    ${users} =    Get Selections From User   Select multiple users  one  two  three
 #    Log    ${users}
 #    ${value} =    Get Value From User        Please enter a value
-#    Execute Manual Step        Please select pass
-#    Execute Manual Step        Please select fail
 
 *** Keywords ***
 

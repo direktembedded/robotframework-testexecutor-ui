@@ -6,11 +6,13 @@ Licensed under BSD-3-Clause, refer LICENSE
 
 
 class IPCTest:
-    def __init__(self, test, result=None):
+    def __init__(self, test, result=None, message=None):
         self.name = test
         self.result = result
+        self.message = message
     name = None
     result = None
+    message = None
 
 
 class IPCMessage:
