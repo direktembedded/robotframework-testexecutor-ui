@@ -79,6 +79,7 @@ if __name__ == "__main__":
     mySuiteGroup.addData(TestExecutorController("Station 1", exampletest="MisspelledSuite.robot"))
     mySuiteGroup.addData(TestExecutorController("Station 2", exampletest="CustomDialogsVerificationSuite.robot"))
     mySuiteGroup.addData(TestExecutorController("Station 3", exampletest="FeedbackVerificationSuite.robot"))
+    mySuiteGroup.addData(TestExecutorController("Station 4", exampletest="LargeTestCountSuite.robot"))
 
     # messy style: material
     # workable styles: fusion, imagine, universal
