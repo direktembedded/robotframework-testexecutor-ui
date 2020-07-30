@@ -1,7 +1,5 @@
 #
-# To execute run
-#   python.exe ProgrammaticListenerExample.py TestRobotCustomDialogs.robot
-# Note there is a close tie between listener and the custom dialog
+# A test suite used to demonstrate robot-testexecutor's Dialogs library to UI usage.
 #
 
 *** Settings ***
