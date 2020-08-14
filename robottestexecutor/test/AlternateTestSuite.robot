@@ -3,7 +3,7 @@
 #
 
 *** Settings ***
-Documentation    A test to check how to integrate a robot listener and dialogs
+Documentation    A suite of tests with tagged tests
 # The caller must ensure CUSTOMDIALOGS variable is set. e.g. CUSTOMDIALOGS:ListenerDialogs
 Library          ${CUSTOMDIALOGS}
 # We only need to provide the default Dialogs library if our CUSTOMDIALOGS library does not provide all keywords
