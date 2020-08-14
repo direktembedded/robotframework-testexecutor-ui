@@ -101,7 +101,7 @@ def parse(*tests, **options):
     return TestSuiteFactory(*tests, **options)
 
 
-def set_controller_data(controller, includes=[]):
+def set_controller_data(controller, include_tags=[], suitenames=[]):
     """
 
     :param controller:
@@ -117,10 +117,12 @@ def set_controller_data(controller, includes=[]):
 
     suitestructure = parse(tests,
                            variable=variables,
-                           include=includes
+                           include=include_tags,
+                           suite=suitenames
                            )
     suites.clear()
     tags = []
+    suitenames = []
     if len(suitestructure.tests) > 0:
         print(suitestructure.name)
         for test in suitestructure.tests:
@@ -130,6 +132,7 @@ def set_controller_data(controller, includes=[]):
     else:
         for suite in suitestructure.suites:
             print(suite.name)
+            suitenames.append(suite.name)
             data = [suite.name, suite.doc]
             newparent = suites.appendChild(data)
             for test in suite.tests:
@@ -140,8 +143,10 @@ def set_controller_data(controller, includes=[]):
                     if tag not in tags:
                         tags.append(tag)
     print(TAGS, tags)
-    return tags
+    return tags, suitenames
 
+selected_tags = []
+selected_suitenames = []
 
 if __name__ == "__main__":
     import testexecutor as te
@@ -149,15 +154,21 @@ if __name__ == "__main__":
 
     def selectionFilterChanged(name, selected):
         print("selectionFilterChanged", name, selected.getItems())
+        global selected_tags
+        global selected_suitenames
         if name == TAGS:
-            set_controller_data(controller, selected.getItems())
+            selected_tags = selected.getItems()
+        elif name == SUITES:
+            selected_suitenames = selected.getItems()
+        set_controller_data(controller, selected_tags, selected_suitenames)
 
     mySuiteGroup = TestSuiteGroup()
     suite = SampleTestSuiteWrapper("Diagnostics")
     controller = TestSuiteControlModel(filtercallback=selectionFilterChanged, filters=filters)
     controller.testselector = TreeSelectorModel()
-    tags = set_controller_data(controller)
+    tags, suitenames = set_controller_data(controller)
     controller.filters.updateData(TAGS, tags)
+    controller.filters.updateData(SUITES, suitenames)
     suite.controller = controller
     mySuiteGroup.addData(suite)
 
