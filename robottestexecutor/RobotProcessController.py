@@ -7,15 +7,14 @@ from multiprocessing import Process, Pipe
 from robot import run
 from .TestExecutorIPCListener import TestExecutorIPCListener
 from .proxy.TestExecutorLogger import TestExecutorLogger
-from .TestExecutorIPC import IPCCommands, IPCCommand
+from .TestExecutorIPC import IPCCommands, IPCCommand, TestExecutionInfo
 
 class RobotProcessController(Process):
 
-    def __init__(self, connection, testsuite=None):
+    def __init__(self, connection):
         self.listener = TestExecutorIPCListener(connection)
         self.logger = TestExecutorLogger(connection)
         self.running = False
-        self.testsuite = testsuite #TODO this should come in via command
         Process.__init__(self, target=self.process, args=(connection,))
 
     def process(self, connection):
@@ -24,17 +23,24 @@ class RobotProcessController(Process):
             if connection.poll(1):
                 rc = connection.recv()
                 if rc.op == IPCCommands.EXECUTE_SUITE:
-                    variables = self._get_variables(rc.data)
+                    source = self._get_source(rc.data[TestExecutionInfo.SOURCE])
+                    suites = self._get_suites(rc.data[TestExecutionInfo.SUITES])
+                    tests = self._get_tests(rc.data[TestExecutionInfo.TESTS])
+                    includes = self._get_tags(rc.data[TestExecutionInfo.TAGS])
+                    variables = self._get_variables(rc.data[TestExecutionInfo.VARIABLES])
                     print(rc.op, rc.data)
-                    self._process(variables)
+                    self._process(source, suites, tests, includes, variables)
                     print("out of run")
 
-    def _process(self, variables):
+    def _process(self, source, suites, tests, includes, variables):
         variables.append("CUSTOMDIALOGS:robottestexecutor.TestExecutorIPCDialogs")
         from robot.output import LOGGER
         LOGGER.register_logger(self.logger)
-        run(self.testsuite, listener=self.listener,
+        run(source, listener=self.listener,
+            suite=suites,
+            test=tests,
             variable=variables,
+            include=includes,
             prerunmodifier=["robottestexecutor.TestExecutorSuitePreRunModifier"],  # TODO probably not using this
             console="none",
             loglevel="INFO",
@@ -44,6 +50,29 @@ class RobotProcessController(Process):
             )
         LOGGER.unregister_logger(self.logger)
 
+    def _get_source(self, dict):
+        return dict[0]
+
+    def _get_suites(self, dict):
+        suites = []
+        if dict:
+            for item in dict.items():
+                suites.append("{0}:{1}".format(item[0], item[1]))
+        return suites
+
+    def _get_tests(self, dict):
+        tests = []
+        if dict:
+            for item in dict.items():
+                tests.append("{0}:{1}".format(item[0], item[1]))
+        return tests
+
+    def _get_tags(self, dict):
+        tags = []
+        if dict:
+            for item in dict.items():
+                tags.append("{0}:{1}".format(item[0], item[1]))
+        return tags
 
     def _get_variables(self, dict):
         variables = []

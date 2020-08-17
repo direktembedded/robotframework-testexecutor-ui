@@ -6,6 +6,7 @@ Licensed under BSD-3-Clause, refer LICENSE
 
 import threading
 from multiprocessing import Process, Pipe
+from PySide2.QtCore import Qt
 from robot import run
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
@@ -15,7 +16,7 @@ from testexecutor.model.ResultModel import ResultModel
 from .RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
 from .TestExecutorIPCListener import TestExecutorIPCListener
-from .TestExecutorIPC import TestExecutorIPC, IPCTypes, IPCCommand, IPCCommands
+from .TestExecutorIPC import TestExecutorIPC, IPCTypes, IPCCommand, IPCCommands, TestExecutionInfo
 from .proxy.TestExecutorLogger import TestExecutorLogger
 
 
@@ -46,10 +47,10 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         if not self._runner:
             import datetime
             #self._runner = threading.Thread(target=self._thread_run, args=(self.exampletest,))
-            self._runner = threading.Thread(target=self._process_run, args=(self.exampletest,))
+            self._runner = threading.Thread(target=self._process_run, args=())
             self._runner.start()
         else:
-            self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._id_data.getValues()))
+            self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
         
 
     def _thread_run(self, testsuite):
@@ -62,16 +63,16 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             log="{0}-log.html".format(self._instance)
             )
 
-    def _process_run(self, testsuite):
+    def _process_run(self):
         import datetime
         self.parent_conn, child_conn = Pipe()
-        p = RobotProcessController(child_conn, testsuite)
+        p = RobotProcessController(child_conn)
         p.start()
 
         parent_conn = self.parent_conn
         self.running = True
         active_test = None
-        self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._id_data.getValues()))
+        self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
         while p.is_alive() and self.running:
             if parent_conn.poll(1):
                 rc = parent_conn.recv()
@@ -109,14 +110,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self._runner = None
         print("exited runner")
 
-    def _get_variables(self):
-        variables = []
-        ids = self._id_data.getValues()
-        if ids:
-            for item in ids.items():
-                variables.append("{0}:{1}".format(item[0], item[1]))
-        return variables
-
     def _input_filter(self, input):
         #TODO this does not consider user filter yet
         self._id_data.setValue('devicekey', input)
@@ -144,5 +137,32 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         else:
             newstate = st
         return newstate
+
+    def _get_execution_info(self):
+        tests = []
+        controller = self.controller
+        selection = self.controller.testselector.selection
+        rows = selection.selectedIndexes()
+        # If any tests are selected then list them and only these will be executed. If none were selected then all
+        # will be executed based on suites and tags selected. That is how robot framework executes tests.
+        for index in rows:
+            row = selection.model().itemData(index)
+            print(index.row(), row)
+            if len(row[0].childItems) == 0:
+                test = row[0]
+                tests.append(test.itemData[0])
+        info = {}
+        info[TestExecutionInfo.VARIABLES] = self._get_variables()
+        info[TestExecutionInfo.TESTS] = tests
+        #info[TestExecutionInfo.SUITES] = suites
+        return info
+
+    def _get_variables(self):
+        variables = []
+        ids = self._id_data.getValues()
+        if ids:
+            for item in ids.items():
+                variables.append("{0}:{1}".format(item[0], item[1]))
+        return variables
 
     DEVICEKEY = 'devicekey'

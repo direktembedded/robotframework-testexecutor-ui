@@ -13,6 +13,7 @@ from testexecutor.model.FilterGroupModel import FilterGroupModel
 from testexecutor.model.FilterModel import FilterModel
 from testexecutor.model.TestSuiteControlModel import TestSuiteControlModel
 from testexecutor.model.TreeSelectorModel import TreeSelectorModel
+from robottestexecutor.TestExecutorController import TestExecutorController
 
 config = '''{
     "states": {
@@ -24,7 +25,7 @@ config = '''{
 
     "proportion": {
       "title": 0.1,
-      "identification": 0.2,
+      "identification": 0.05,
       "instructions": 0.4,
       "status": 0.04
     },
@@ -79,7 +80,7 @@ config = '''{
     
     "instructions": {
         "color": "yellow",
-        "proportion": {"header": 0.33, "textHeight": 0.05, "control": 0.1}
+        "proportion": {"header": 0.1, "textHeight": 0.05, "control": 0.1}
     }
 }
 '''
@@ -123,6 +124,7 @@ def set_controller_data(controller, include_tags=[], suitenames=[]):
     suites.clear()
     tags = []
     suitenames = []
+    # TODO subdirectories need to have their suites extracted
     if len(suitestructure.tests) > 0:
         print(suitestructure.name)
         for test in suitestructure.tests:
@@ -163,7 +165,8 @@ if __name__ == "__main__":
         set_controller_data(controller, selected_tags, selected_suitenames)
 
     mySuiteGroup = TestSuiteGroup()
-    suite = SampleTestSuiteWrapper("Diagnostics")
+    #suite = SampleTestSuiteWrapper("Diagnostics")
+    suite = TestExecutorController("Diagnostics")
     controller = TestSuiteControlModel(filtercallback=selectionFilterChanged, filters=filters)
     controller.testselector = TreeSelectorModel()
     tags, suitenames = set_controller_data(controller)
