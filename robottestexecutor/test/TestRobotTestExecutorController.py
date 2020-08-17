@@ -11,9 +11,12 @@ from testexecutor.model.MultiTestWindowModel import MultiTestWindowModel
 from testexecutor.test.SampleTestSuiteWrapper import SampleTestSuiteWrapper
 from testexecutor.model.FilterGroupModel import FilterGroupModel
 from testexecutor.model.FilterModel import FilterModel
-from testexecutor.model.TestSuiteControlModel import TestSuiteControlModel
-from testexecutor.model.TreeSelectorModel import TreeSelectorModel
 from robottestexecutor.TestExecutorController import TestExecutorController
+import os
+from PySide2.QtWidgets import QApplication
+from PySide2.QtCore import QUrl
+from PySide2.QtQuick import QQuickView
+from testexecutor.ui import __file__ as uifiles
 
 config = '''{
     "states": {
@@ -85,94 +88,18 @@ config = '''{
 }
 '''
 
-import os
-from PySide2.QtWidgets import QApplication
-from PySide2.QtCore import QUrl
-from PySide2.QtQuick import QQuickView
-from robot.testdoc import TestSuiteFactory
-from testexecutor.model.TreeSelectorModel import TreeSelectorModel, TreeItem
-from testexecutor.ui import __file__ as uifiles
-
-TAGS = "Tags"
-SUITES = "Suites"
-filters = {SUITES: [], TAGS: []}
-
-
-def parse(*tests, **options):
-    return TestSuiteFactory(*tests, **options)
-
-
-def set_controller_data(controller, include_tags=[], suitenames=[]):
-    """
-
-    :param controller:
-    :param includes: Array of case insensitive tags to include. use AND OR etc like usbANDport as necessary.
-    :return:
-    """
-    suites = controller.testselector
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    #test_path = os.path.join(current_path, '..', 'test', 'dummy')
-    test_path = current_path
-    tests = test_path
-    variables = ["dummyvar:true"]
-
-    suitestructure = parse(tests,
-                           variable=variables,
-                           include=include_tags,
-                           suite=suitenames
-                           )
-    suites.clear()
-    tags = []
-    suitenames = []
-    # TODO subdirectories need to have their suites extracted
-    if len(suitestructure.tests) > 0:
-        print(suitestructure.name)
-        for test in suitestructure.tests:
-            data = [test.name, test.doc]
-            suites.appendChild(data)
-            print(test.name)
-    else:
-        for suite in suitestructure.suites:
-            print(suite.name)
-            suitenames.append(suite.name)
-            data = [suite.name, suite.doc]
-            newparent = suites.appendChild(data)
-            for test in suite.tests:
-                print(test.name)
-                data = [test.name, test.doc]
-                newparent.appendChild(data)
-                for tag in test.tags:
-                    if tag not in tags:
-                        tags.append(tag)
-    print(TAGS, tags)
-    return tags, suitenames
-
-selected_tags = []
-selected_suitenames = []
 
 if __name__ == "__main__":
     import testexecutor as te
-    controller = None
 
-    def selectionFilterChanged(name, selected):
-        print("selectionFilterChanged", name, selected.getItems())
-        global selected_tags
-        global selected_suitenames
-        if name == TAGS:
-            selected_tags = selected.getItems()
-        elif name == SUITES:
-            selected_suitenames = selected.getItems()
-        set_controller_data(controller, selected_tags, selected_suitenames)
+    # TODO, handle with command line argument
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    # test_path = os.path.join(current_path, '..', 'test', 'dummy')
+    test_path = current_path
 
     mySuiteGroup = TestSuiteGroup()
     #suite = SampleTestSuiteWrapper("Diagnostics")
-    suite = TestExecutorController("Diagnostics")
-    controller = TestSuiteControlModel(filtercallback=selectionFilterChanged, filters=filters)
-    controller.testselector = TreeSelectorModel()
-    tags, suitenames = set_controller_data(controller)
-    controller.filters.updateData(TAGS, tags)
-    controller.filters.updateData(SUITES, suitenames)
-    suite.controller = controller
+    suite = TestExecutorController("Diagnostics", testpath=test_path, useselector=True)
     mySuiteGroup.addData(suite)
 
     # messy style: material

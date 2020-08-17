@@ -5,14 +5,18 @@ Licensed under BSD-3-Clause, refer LICENSE
 """
 
 import threading
+import os
 from multiprocessing import Process, Pipe
 from PySide2.QtCore import Qt
 from robot import run
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
+from robot.testdoc import TestSuiteFactory
 from testexecutor.model.TestSuiteModel import TestSuiteModel
 from testexecutor.model.KeyValueModel import KeyValueModel, KeyValue
 from testexecutor.model.ResultModel import ResultModel
+from testexecutor.model.TreeSelectorModel import TreeSelectorModel
+from testexecutor.model.TestSuiteControlModel import TestSuiteControlModel
 from .RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
 from .TestExecutorIPCListener import TestExecutorIPCListener
@@ -20,11 +24,20 @@ from .TestExecutorIPC import TestExecutorIPC, IPCTypes, IPCCommand, IPCCommands,
 from .proxy.TestExecutorLogger import TestExecutorLogger
 
 
+TAGS = "Tags"
+SUITES = "Suites"
+default_filters = {SUITES: [], TAGS: []}
+
+
+def parse(*tests, **options):
+    return TestSuiteFactory(*tests, **options)
+
+
 class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     INSTANCE = 0
 
-    def __init__(self, title="Robot Listener", ids=None, exampletest=None):
+    def __init__(self, title="Robot Listener", ids=None, testpath=None, useselector=False):
         if ids:
             # TODO make this an import of json?
             self._id_data = ids
@@ -37,11 +50,22 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self.running = False
         TestExecutorController.INSTANCE = TestExecutorController.INSTANCE + 1
         self._instance = TestExecutorController.INSTANCE
-        self.exampletest = exampletest
         TestSuiteModel.__init__(self, self._id_data, self._results, self._input_filter,
                                 setstate_callback=self._state_control_callback, title=title)
         self.suitestate = TestSuiteModel.STATE_IDLE
         TestExecutorListener.__init__(self, model=self)
+        self.selected_tags = []
+        self.selected_suitenames = []
+        self.testpath = testpath
+        if useselector:
+            self.controller = TestSuiteControlModel(filtercallback=self._selectionFilterChanged, filters=default_filters)
+            self.controller.testselector = TreeSelectorModel()
+            tags = []
+            suitenames = []
+            if self.testpath:
+                tags, suitenames = self._set_controller_data(self.controller)
+            self.controller.filters.updateData(TAGS, tags)
+            self.controller.filters.updateData(SUITES, suitenames)
 
     def start(self):
         if not self._runner:
@@ -110,6 +134,14 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self._runner = None
         print("exited runner")
 
+    def _selectionFilterChanged(self, name, selected):
+        print("selectionFilterChanged", name, selected.getItems())
+        if name == TAGS:
+            self.selected_tags = selected.getItems()
+        elif name == SUITES:
+            self.selected_suitenames = selected.getItems()
+        self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
+
     def _input_filter(self, input):
         #TODO this does not consider user filter yet
         self._id_data.setValue('devicekey', input)
@@ -138,6 +170,48 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             newstate = st
         return newstate
 
+    def _set_controller_data(self, controller, include_tags=[], suitenames=[]):
+        """
+
+        :param controller:
+        :param includes: Array of case insensitive tags to include. use AND OR etc like usbANDport as necessary.
+        :return:
+        """
+        suites = controller.testselector
+        tests = self.testpath
+        variables = ["dummyvar:true"]
+
+        suitestructure = parse(tests,
+                               variable=variables,
+                               include=include_tags,
+                               suite=suitenames
+                               )
+        suites.clear()
+        tags = []
+        suitenames = []
+        # TODO subdirectories need to have their suites extracted
+        if len(suitestructure.tests) > 0:
+            print(suitestructure.name)
+            for test in suitestructure.tests:
+                data = [test.name, test.doc]
+                suites.appendChild(data)
+                print(test.name)
+        else:
+            for suite in suitestructure.suites:
+                print(suite.name)
+                suitenames.append(suite.name)
+                data = [suite.name, suite.doc]
+                newparent = suites.appendChild(data)
+                for test in suite.tests:
+                    print(test.name)
+                    data = [test.name, test.doc]
+                    newparent.appendChild(data)
+                    for tag in test.tags:
+                        if tag not in tags:
+                            tags.append(tag)
+        print(TAGS, tags)
+        return tags, suitenames
+
     def _get_execution_info(self):
         tests = []
         controller = self.controller
@@ -154,7 +228,9 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         info = {}
         info[TestExecutionInfo.VARIABLES] = self._get_variables()
         info[TestExecutionInfo.TESTS] = tests
-        #info[TestExecutionInfo.SUITES] = suites
+        info[TestExecutionInfo.SUITES] = self.selected_suitenames
+        info[TestExecutionInfo.SOURCE] = self.testpath
+        info[TestExecutionInfo.TAGS] = self.selected_tags
         return info
 
     def _get_variables(self):
