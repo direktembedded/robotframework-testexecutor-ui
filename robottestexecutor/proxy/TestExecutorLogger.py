@@ -35,10 +35,16 @@ class TestExecutorLogger:
             self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage("Failed", summary)))
 
     def message(self, msg):
-        blacklist = ['Tests execution ended']
+        execution_ended = 'Tests execution ended'
+        blacklist = [execution_ended, 'Created keyword', 'Imported library', 'Initializing namespace', 'In library'
+                     'Found test library']
+        print("message from log:", msg.level, msg)
         avoid = False
         for item in blacklist:
-            if item in msg.message:
+            if execution_ended in msg.message:
+                self.connection.send(TestExecutorIPC(IPCTypes.END_EXECUTION))
+                avoid = True
+            elif item in msg.message:
                 avoid = True
                 break
         if not avoid:

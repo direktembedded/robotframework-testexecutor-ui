@@ -40,6 +40,7 @@ class IPCTypes:
     END_SUITE = "end_suite"
     START_TEST = "start_test"
     END_TEST = "end_test"
+    END_EXECUTION = "end_execution"
     LOG_MESSAGE = "log_message"
     EXECUTE_MANUAL_STEP = "execute_manual_step"
 
