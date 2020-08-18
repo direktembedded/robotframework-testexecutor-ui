@@ -44,7 +44,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         else:
             # If no identification is given at least populate with one, devicekey.
             self._id_data = KeyValueModel()
-            self._id_data.add(self.DEVICEKEY, KeyValue('device', ''))
+            self._id_data.add(self.DEVICEKEY, KeyValue('Device', ''))
         self._results = ResultModel()
         self._runner = None
         self.running = False
@@ -157,6 +157,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
     def _stop_suite(self):
         #TODO tell robot run to stop
         # we are not stopping process  -- self.running = False
+        self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
         pass
 
     def _clear_suite(self):

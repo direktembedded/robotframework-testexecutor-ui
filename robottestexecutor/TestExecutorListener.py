@@ -32,7 +32,7 @@ class TestExecutorListener(TestSuiteListener):
 
     def end_suite(self, name, result):
         print("\nTestExecutorListener.end_suite", name, result.endtime)
-        self.suiteEnd(name.name) # TODO set failures?
+        self.suiteEnd(name.name)
 
     def log_message(self, msg, level=None):
         print("log_message", msg)

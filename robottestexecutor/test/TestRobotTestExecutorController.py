@@ -28,13 +28,13 @@ config = '''{
 
     "proportion": {
       "title": 0.1,
-      "identification": 0.05,
+      "identification": 0.1,
       "instructions": 0.4,
       "status": 0.04
     },
 
     "results": {
-      "viewableCount": 8,
+      "viewableCount": 15,
       "color": "#e5e2e2",
       "item": {
         "proportion": {
@@ -61,7 +61,7 @@ config = '''{
     },
 
     "identification": {
-      "proportion": {"input": 0.15},
+      "proportion": {"input": 0.4},
       "item": { 
             "proportion": {
               "name": 0.4
@@ -87,6 +87,33 @@ config = '''{
     }
 }
 '''
+
+# TODO continue to make default behaviour for id list
+id_config = {
+    "class": {
+        "DefaultIdentification": {
+            "module": "",
+            "init_values": [
+                {
+                    "device": {
+                        "name": "Device"
+                    }
+                },
+                {
+                    "serial": {
+                        "name": "Serial No"
+                    }
+                },
+                {
+                    "model": {
+                        "name": "Model",
+                        "possibles": ["Simple", "Another", "Super SKU"]
+                    }
+                }
+            ]
+        }
+    }
+}
 
 
 if __name__ == "__main__":
