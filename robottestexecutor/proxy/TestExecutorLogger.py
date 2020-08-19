@@ -38,15 +38,15 @@ class TestExecutorLogger:
         execution_ended = 'Tests execution ended'
         blacklist = [execution_ended, 'Created keyword', 'Imported library', 'Initializing namespace', 'In library'
                      'Found test library']
-        print("message from log:", msg.level, msg)
-        avoid = False
-        for item in blacklist:
-            if execution_ended in msg.message:
-                self.connection.send(TestExecutorIPC(IPCTypes.END_EXECUTION))
-                avoid = True
-            elif item in msg.message:
-                avoid = True
+        whitelist = []
+        #print("message from log:", msg.level, msg)
+        avoid = True
+        if execution_ended in msg.message:
+            self.connection.send(TestExecutorIPC(IPCTypes.END_EXECUTION))
+            avoid = True
+        for item in whitelist:
+            if item in msg.message:
+                avoid = False
                 break
         if not avoid:
             self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(msg.level, msg.message)))
-
