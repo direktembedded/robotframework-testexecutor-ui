@@ -126,129 +126,129 @@ USB Test 4
 
 USB and Port Test 5
     [Tags]    USB  Port
-    Log    USB port works
+    Log    USB and Port works
 
 USB and Port Test 6
     [Tags]    USB  Port
-    Log    USB port works
+    Log    USB and port works
 
 USB and Port Test 7
     [Tags]    USB  Port
-    Log    USB port works
+    Log    USB and port works
 
 USB and Port Test 8
     [Tags]    USB  Port
-    Log    USB port works
+    Log    USB and port works
 
 USB and Port Test 9
     [Tags]    USB  Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 1
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 2
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 3
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 4
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 5
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 6
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 7
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 8
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 9
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 10
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 11
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 12
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 13
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 14
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 15
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 16
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 17
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 18
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 19
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 20
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 21
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 22
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 23
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 24
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 25
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 26
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 
 Port Test 27
     [Tags]    Port
-    Log    USB port works
+    Log    USB and port works
 

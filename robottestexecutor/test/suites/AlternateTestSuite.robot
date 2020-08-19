@@ -53,17 +53,17 @@ USB Test B
 USB and Port Test A
     [Tags]    USB  Port
     [Documentation]  A USB and Port Test we give the name A
-    Log    USB port works
+    Log    USB and Port works
 
 USB and Port Test B
     [Tags]    USB  Port
     [Documentation]  A USB and Port Test we give the name B
-    Log    USB port works
+    Log    USB and Port works
 
 USB and Port Test C
     [Tags]    USB  Port
     [Documentation]  A USB and Port Test we give the name C
-    Log    USB port works
+    Log    USB and Port works
 
 USB and Port Test D
     [Tags]    USB  Port
@@ -73,14 +73,14 @@ USB and Port Test D
 Port Test A
     [Tags]    Port
     [Documentation]  A Port Test we give the name A
-    Log    USB port works
+    Log    Port works
 
 Port Test B
     [Tags]    Port
     [Documentation]  A Port Test we give the name B
-    Log    USB port works
+    Log    Port works
 
 Port Test C
     [Tags]    Port
     [Documentation]  A Port Test we give the name C
-    Log    USB port works
+    Log    Port works
