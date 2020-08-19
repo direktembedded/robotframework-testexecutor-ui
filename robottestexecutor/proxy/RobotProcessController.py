@@ -5,14 +5,14 @@ Licensed under BSD-3-Clause, refer LICENSE
 """
 from multiprocessing import Process
 from robot import run
-from robottestexecutor.proxy.TestExecutorIPCListener import TestExecutorIPCListener
+from robottestexecutor.proxy.TestExecutorListener import TestExecutorListener
 from robottestexecutor.proxy.TestExecutorLogger import TestExecutorLogger
 from robottestexecutor.proxy.TestExecutorIPC import IPCCommands, TestExecutionInfo
 
 class RobotProcessController(Process):
 
     def __init__(self, connection):
-        self.listener = TestExecutorIPCListener(connection)
+        self.listener = TestExecutorListener(connection)
         self.logger = TestExecutorLogger(connection)
         self.running = False
         Process.__init__(self, target=self.process, args=(connection,))
@@ -41,7 +41,7 @@ class RobotProcessController(Process):
                     self._process(source, suites, tests, includes, variables)
 
     def _process(self, source, suites, tests, includes, variables):
-        variables.append("CUSTOMDIALOGS:robottestexecutor.proxy.TestExecutorIPCDialogs")
+        variables.append("CUSTOMDIALOGS:robottestexecutor.proxy.TestExecutorDialogs")
         from robot.output import LOGGER
         LOGGER.register_logger(self.logger)
         run(source, listener=self.listener,

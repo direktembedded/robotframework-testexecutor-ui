@@ -7,7 +7,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robottestexecutor.proxy.TestExecutorIPC import TestExecutorIPC, IPCTest, IPCMessage, IPCTypes
 
 
-class TestExecutorIPCListener():
+class TestExecutorListener():
     ROBOT_LIBRARY_SCOPE = 'TEST SUITE'
     ROBOT_LISTENER_API_VERSION = 3
 

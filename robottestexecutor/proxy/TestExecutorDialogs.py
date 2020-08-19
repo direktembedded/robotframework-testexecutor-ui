@@ -8,7 +8,7 @@ A test library providing dialogs for interacting with users.
 
 ``Dialogs`` is Robot Framework's standard library that provides means
 for pausing the test execution and getting input from users.
-This implementation ``TestExecutorIPCDialogs`` is an interface library
+This implementation ``TestExecutorDialogs`` is an interface library
 which communicates with a running ``TestExecutor`` instance to display
 messages and receive commands and data.
 This implementation extends the Dialogs library to include a few extra
@@ -33,7 +33,7 @@ __all__ = ['execute_manual_step',
            'pause_execution']
 
 
-class TestExecutorIPCDialogs:
+class TestExecutorDialogs:
 
     def __init__(self):
         pass
