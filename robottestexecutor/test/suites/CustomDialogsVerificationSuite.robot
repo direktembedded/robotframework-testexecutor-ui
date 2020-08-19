@@ -22,12 +22,12 @@ Log Destination
     [Tags]    Dialogs
     Log To Suite
     Log                  Change Logs to go to suite instruction window and then to test result feedback
-    Sleep                5
+    Sleep                2
     Log To Test
     Log                  This logs to the test result feedback window
-    Sleep                5
+    Sleep                2
     FOR                  ${progress}  IN  10  20  30  40  50  100
-        Sleep            1
+        Sleep            0.5
         Log              ${progress}
     END
 
