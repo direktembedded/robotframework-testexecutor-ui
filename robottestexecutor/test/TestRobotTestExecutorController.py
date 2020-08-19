@@ -121,8 +121,7 @@ if __name__ == "__main__":
 
     # TODO, handle with command line argument
     current_path = os.path.dirname(os.path.abspath(__file__))
-    # test_path = os.path.join(current_path, '..', 'test', 'dummy')
-    test_path = current_path
+    test_path = os.path.join(current_path, 'suites')
 
     mySuiteGroup = TestSuiteGroup()
     #suite = SampleTestSuiteWrapper("Diagnostics")
