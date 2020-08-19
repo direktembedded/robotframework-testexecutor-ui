@@ -12,9 +12,10 @@ def parse(*tests, **options):
 
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
+    test_path = os.path.join(current_path, 'suites')
 
     tests = "LargeTestCountSuite.robot"
-    tests = current_path
+    tests = test_path
     variables = ["dummyvar:true"]
     includes = ["usb", "Port"]  # Case insensitive. use AND OR etc like usbANDport as necessary.
     suitestructure = parse(tests,
