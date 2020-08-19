@@ -122,6 +122,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                         self.feedback(rc.data.name, rc.data.message)
                 elif rc.op == IPCTypes.END_EXECUTION:
                     self.clear_results_on_start = True
+                    if self.controller:
+                        self._allow_start()
                 elif rc.op == IPCTypes.LOG_MESSAGE:
                     self.userInstructions(rc.data.title, rc.data.message, expectResponse=False)
                     #print("\nTEC log_message", rc.data.title, rc.data.message, "END\n")
@@ -134,10 +136,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 self.testCompleted(active_test, False)
             self.suitestate = TestSuiteModel.STATE_STOPPED
         self._runner = None
-        print("exited runner")
 
     def _selectionFilterChanged(self, name, selected):
-        print("selectionFilterChanged", name, selected.getItems())
         if name == TAGS:
             self.selected_tags = selected.getItems()
         elif name == SUITES:
@@ -146,12 +146,18 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def _input_filter(self, input):
         #TODO this does not consider user filter yet
-        self._id_data.setValue('devicekey', input)
-        self.suitestate = TestSuiteModel.STATE_READY
+        if input:
+            self._id_data.setValue('devicekey', input)
+            self.suitestate = TestSuiteModel.STATE_READY
+            self._allow_start()
+
+    def _allow_start(self):
         self.asyncInstructions(self._id_data.getValue(self.DEVICEKEY), "Press start to start test", callback=self._start_suite, control=["Start"])
+        self.suitestate = TestSuiteModel.STATE_RESTART
 
     def _start_suite(self, response=None):
         self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
+        self.results.clear()
         self.start()
 
     def _stop_suite(self):
