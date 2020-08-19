@@ -67,7 +67,9 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             self._runner.start()
         else:
             self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
-        
+
+    def close(self):
+        self.running = False
 
     def _thread_run(self, testsuite):
         # TODO possibly temporary entry/start method.
@@ -120,13 +122,18 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                     #print("\nTEC log_message", rc.data.title, rc.data.message, "END\n")
                 #print(rc)
 
-        if p.is_alive():
-            p.terminate()  # TODO use message sent to slave robot process to close gracefully if we can
-            p.join()
+        if self._terminateProcess(p):
             if active_test:
                 self.testCompleted(active_test, False)
             self.suitestate = TestSuiteModel.STATE_STOPPED
         self._runner = None
+
+    def _terminateProcess(self, p):
+        wasalive = p.is_alive()
+        if wasalive:
+            p.terminate()
+            p.join()
+        return wasalive
 
     def _selectionFilterChanged(self, name, selected):
         if name == TAGS:
@@ -153,7 +160,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def _stop_suite(self):
         #TODO tell robot run to stop
-        # we are not stopping process  -- self.running = False
+        self.running = False
         self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
         pass
 
