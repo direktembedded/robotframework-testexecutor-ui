@@ -8,15 +8,8 @@ Licensed under BSD-3-Clause, refer LICENSE
 
 from testexecutor.model.TestSuiteGroup import TestSuiteGroup
 from testexecutor.model.MultiTestWindowModel import MultiTestWindowModel
-from testexecutor.test.SampleTestSuiteWrapper import SampleTestSuiteWrapper
-from testexecutor.model.FilterGroupModel import FilterGroupModel
-from testexecutor.model.FilterModel import FilterModel
-from robottestexecutor.TestExecutorController import TestExecutorController
+from robottestexecutor.control.TestExecutorController import TestExecutorController
 import os
-from PySide2.QtWidgets import QApplication
-from PySide2.QtCore import QUrl
-from PySide2.QtQuick import QQuickView
-from testexecutor.ui import __file__ as uifiles
 
 config = '''{
     "states": {

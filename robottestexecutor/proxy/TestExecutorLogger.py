@@ -5,9 +5,7 @@ Licensed under BSD-3-Clause, refer LICENSE
 """
 
 from robot.output.loggerhelper import LEVELS
-from robot.libraries.BuiltIn import BuiltIn
-from testexecutor.control.TestSuiteListener import TestSuiteListener
-from ..TestExecutorIPC import TestExecutorIPC, IPCMessage, IPCTypes
+from robottestexecutor.proxy.TestExecutorIPC import TestExecutorIPC, IPCMessage, IPCTypes
 
 
 class TestExecutorLogger:

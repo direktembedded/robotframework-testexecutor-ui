@@ -1,6 +1,6 @@
 from testexecutor.model.TestSuiteGroup import TestSuiteGroup
 from testexecutor.model.MultiTestWindowModel import MultiTestWindowModel
-from robottestexecutor.TestExecutorController import TestExecutorController
+from robottestexecutor.control.TestExecutorController import TestExecutorController
 
 config = '''{
     "states": {

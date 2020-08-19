@@ -5,24 +5,17 @@ Licensed under BSD-3-Clause, refer LICENSE
 """
 
 import threading
-import os
-from multiprocessing import Process, Pipe
-from PySide2.QtCore import Qt
+from multiprocessing import Pipe
 from robot import run
-from robot.libraries.BuiltIn import BuiltIn
-from robot.output import LOGGER
 from robot.testdoc import TestSuiteFactory
 from testexecutor.model.TestSuiteModel import TestSuiteModel
 from testexecutor.model.KeyValueModel import KeyValueModel, KeyValue
 from testexecutor.model.ResultModel import ResultModel
 from testexecutor.model.TreeSelectorModel import TreeSelectorModel
 from testexecutor.model.TestSuiteControlModel import TestSuiteControlModel
-from .RobotProcessController import RobotProcessController
+from robottestexecutor.proxy.RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
-from .TestExecutorIPCListener import TestExecutorIPCListener
-from .TestExecutorIPC import TestExecutorIPC, IPCTypes, IPCCommand, IPCCommands, TestExecutionInfo
-from .proxy.TestExecutorLogger import TestExecutorLogger
-
+from robottestexecutor.proxy.TestExecutorIPC import IPCTypes, IPCCommand, IPCCommands, TestExecutionInfo
 
 TAGS = "Tags"
 SUITES = "Suites"
@@ -69,7 +62,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def start(self):
         if not self._runner:
-            import datetime
             #self._runner = threading.Thread(target=self._thread_run, args=(self.exampletest,))
             self._runner = threading.Thread(target=self._process_run, args=())
             self._runner.start()
@@ -88,7 +80,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             )
 
     def _process_run(self):
-        import datetime
         self.parent_conn, child_conn = Pipe()
         p = RobotProcessController(child_conn)
         p.start()

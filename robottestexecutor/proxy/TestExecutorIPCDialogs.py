@@ -26,7 +26,7 @@ Unimplemented: 'get_value_from_user', 'get_selection_from_user', 'get_selections
 """
 from robot.libraries.BuiltIn import BuiltIn
 from robot.version import get_version
-from .TestExecutorIPC import TestExecutorIPC, IPCTest, IPCMessage, IPCTypes
+from robottestexecutor.proxy.TestExecutorIPC import TestExecutorIPC, IPCMessage, IPCTypes
 
 __version__ = get_version()
 __all__ = ['execute_manual_step',

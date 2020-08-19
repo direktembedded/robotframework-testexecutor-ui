@@ -3,11 +3,11 @@
 Copyright (c) 2020- Sipke Vriend
 Licensed under BSD-3-Clause, refer LICENSE
 """
-from multiprocessing import Process, Pipe
+from multiprocessing import Process
 from robot import run
-from .TestExecutorIPCListener import TestExecutorIPCListener
-from .proxy.TestExecutorLogger import TestExecutorLogger
-from .TestExecutorIPC import IPCCommands, IPCCommand, TestExecutionInfo
+from robottestexecutor.proxy.TestExecutorIPCListener import TestExecutorIPCListener
+from robottestexecutor.proxy.TestExecutorLogger import TestExecutorLogger
+from robottestexecutor.proxy.TestExecutorIPC import IPCCommands, TestExecutionInfo
 
 class RobotProcessController(Process):
 
@@ -38,12 +38,10 @@ class RobotProcessController(Process):
                         includes = rc.data[TestExecutionInfo.TAGS]
                     if TestExecutionInfo.VARIABLES in rc.data:
                         variables =rc.data[TestExecutionInfo.VARIABLES]
-                    print(rc.op, rc.data)
                     self._process(source, suites, tests, includes, variables)
-                    print("out of run")
 
     def _process(self, source, suites, tests, includes, variables):
-        variables.append("CUSTOMDIALOGS:robottestexecutor.TestExecutorIPCDialogs")
+        variables.append("CUSTOMDIALOGS:robottestexecutor.proxy.TestExecutorIPCDialogs")
         from robot.output import LOGGER
         LOGGER.register_logger(self.logger)
         run(source, listener=self.listener,
@@ -51,7 +49,7 @@ class RobotProcessController(Process):
             test=tests,
             variable=variables,
             include=includes,
-            prerunmodifier=["robottestexecutor.TestExecutorSuitePreRunModifier"],  # TODO probably not using this
+            prerunmodifier=["robottestexecutor.control.TestExecutorSuitePreRunModifier"],  # TODO probably not using this
             console="none",
             loglevel="INFO",
             output="NONE",
