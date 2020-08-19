@@ -201,28 +201,33 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         suitenames = []
         # TODO subdirectories need to have their suites extracted
         if len(suitestructure.tests) > 0:
-            print(suitestructure.name)
             for test in suitestructure.tests:
                 data = [test.name, test.doc]
                 suites.appendChild(data)
-                print(test.name)
         else:
             for suite in suitestructure.suites:
-                print(suite.name)
                 suitenames.append(suite.name)
                 data = [suite.name, suite.doc]
                 newparent = suites.appendChild(data)
                 for test in suite.tests:
-                    print(test.name)
                     data = [test.name, test.doc]
                     newparent.appendChild(data)
                     for tag in test.tags:
                         if tag not in tags:
                             tags.append(tag)
-        print(TAGS, tags)
         return tags, suitenames
 
     def _get_execution_info(self):
+        if self.controller:
+            return self._get_execution_info_from_controller()
+        else:
+            info = {}
+            info[TestExecutionInfo.VARIABLES] = self._get_variables()
+            info[TestExecutionInfo.SOURCE] = self.testpath
+            return info
+
+    def _get_execution_info_from_controller(self):
+
         tests = []
         controller = self.controller
         selection = self.controller.testselector.selection
@@ -231,7 +236,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         # will be executed based on suites and tags selected. That is how robot framework executes tests.
         for index in rows:
             row = selection.model().itemData(index)
-            print(index.row(), row)
             if len(row[0].childItems) == 0:
                 test = row[0]
                 tests.append(test.itemData[0])

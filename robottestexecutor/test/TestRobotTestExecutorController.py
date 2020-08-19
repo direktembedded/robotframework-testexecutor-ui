@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     mySuiteGroup = TestSuiteGroup()
     #suite = SampleTestSuiteWrapper("Diagnostics")
-    suite = TestExecutorController("Diagnostics", testpath=test_path, useselector=True)
+    suite = TestExecutorController("Test Suite", testpath=test_path, useselector=True)
     mySuiteGroup.addData(suite)
 
     # messy style: material

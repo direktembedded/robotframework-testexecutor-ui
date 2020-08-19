@@ -74,12 +74,16 @@ config = '''{
 
 if __name__ == "__main__":
     import testexecutor as te
+    import os
+
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    test_path = os.path.join(current_path, 'suites')
 
     mySuiteGroup = TestSuiteGroup()
-    mySuiteGroup.addData(TestExecutorController("Station 1", exampletest="MisspelledSuite.robot"))
-    mySuiteGroup.addData(TestExecutorController("Station 2", exampletest="CustomDialogsVerificationSuite.robot"))
-    mySuiteGroup.addData(TestExecutorController("Station 3", exampletest="FeedbackVerificationSuite.robot"))
-    mySuiteGroup.addData(TestExecutorController("Station 4", exampletest="LargeTestCountSuite.robot"))
+    mySuiteGroup.addData(TestExecutorController("Station 1", testpath=os.path.join(test_path, "MisspelledSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 2", testpath=os.path.join(test_path, "CustomDialogsVerificationSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 3", testpath=os.path.join(test_path, "FeedbackVerificationSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 4", testpath=os.path.join(test_path, "LargeTestCountSuite.robot")))
 
     # messy style: material
     # workable styles: fusion, imagine, universal

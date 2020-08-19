@@ -4,6 +4,7 @@ Copyright (c) 2020- Sipke Vriend
 Licensed under BSD-3-Clause, refer LICENSE
 """
 
+from robot.output.loggerhelper import LEVELS
 from robot.libraries.BuiltIn import BuiltIn
 from testexecutor.control.TestSuiteListener import TestSuiteListener
 from ..TestExecutorIPC import TestExecutorIPC, IPCMessage, IPCTypes
@@ -40,13 +41,14 @@ class TestExecutorLogger:
                      'Found test library']
         whitelist = []
         #print("message from log:", msg.level, msg)
-        avoid = True
-        if execution_ended in msg.message:
-            self.connection.send(TestExecutorIPC(IPCTypes.END_EXECUTION))
-            avoid = True
-        for item in whitelist:
-            if item in msg.message:
-                avoid = False
-                break
+        avoid = (LEVELS[msg.level] < LEVELS['WARN'])
+        if avoid:
+            if execution_ended in msg.message:
+                self.connection.send(TestExecutorIPC(IPCTypes.END_EXECUTION))
+                avoid = True
+            for item in whitelist:
+                if item in msg.message:
+                    avoid = False
+                    break
         if not avoid:
             self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(msg.level, msg.message)))

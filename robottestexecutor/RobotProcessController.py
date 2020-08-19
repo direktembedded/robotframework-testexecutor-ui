@@ -23,11 +23,21 @@ class RobotProcessController(Process):
             if connection.poll(1):
                 rc = connection.recv()
                 if rc.op == IPCCommands.EXECUTE_SUITE:
-                    source = rc.data[TestExecutionInfo.SOURCE]
-                    suites = rc.data[TestExecutionInfo.SUITES]
-                    tests = rc.data[TestExecutionInfo.TESTS]
-                    includes = rc.data[TestExecutionInfo.TAGS]
-                    variables =rc.data[TestExecutionInfo.VARIABLES]
+                    source = []
+                    suites = []
+                    tests = []
+                    includes = []
+                    variables = []
+                    if TestExecutionInfo.SOURCE in rc.data:
+                        source = rc.data[TestExecutionInfo.SOURCE]
+                    if TestExecutionInfo.SUITES in rc.data:
+                        suites = rc.data[TestExecutionInfo.SUITES]
+                    if TestExecutionInfo.TESTS in rc.data:
+                        tests = rc.data[TestExecutionInfo.TESTS]
+                    if TestExecutionInfo.TAGS in rc.data:
+                        includes = rc.data[TestExecutionInfo.TAGS]
+                    if TestExecutionInfo.VARIABLES in rc.data:
+                        variables =rc.data[TestExecutionInfo.VARIABLES]
                     print(rc.op, rc.data)
                     self._process(source, suites, tests, includes, variables)
                     print("out of run")

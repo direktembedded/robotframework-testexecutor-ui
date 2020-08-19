@@ -14,7 +14,6 @@ class TestExecutorListener(TestSuiteListener):
     def __init__(self, model):
         self.ROBOT_LIBRARY_LISTENER = self
         TestSuiteListener.__init__(self, model=model)
-        print("\nTestExecutorListener.__init__")
 
     def start_suite(self, name, result):
         print("\nTestExecutorListener.start_suite", name, result.starttime)
