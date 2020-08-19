@@ -215,6 +215,10 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                     for tag in test.tags:
                         if tag not in tags:
                             tags.append(tag)
+        if len(tags) > 0:
+            tags.insert(0, '')
+        if len(suitenames) > 0:
+            suitenames.insert(0, '')
         return tags, suitenames
 
     def _get_execution_info(self):
