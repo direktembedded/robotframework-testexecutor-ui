@@ -17,6 +17,9 @@ from testexecutor.model.TestSuiteControlModel import TestSuiteControlModel
 from robottestexecutor.proxy.RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
 from robottestexecutor.proxy.TestExecutorIPC import IPCTypes, IPCCommand, IPCCommands, TestExecutionInfo
+from ..config.IdentificationConfig import IdentifierListSchema
+from ..config.IdentificationConfig import default_id_config
+
 
 TAGS = "Tags"
 SUITES = "Suites"
@@ -31,14 +34,13 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     INSTANCE = 0
 
-    def __init__(self, title="Robot Listener", ids=None, testpath=None, useselector=False):
-        if ids:
-            # TODO make this an import of json?
-            self._id_data = ids
-        else:
-            # If no identification is given at least populate with one, devicekey.
-            self._id_data = KeyValueModel()
-            self._id_data.add(self.DEVICEKEY, KeyValue('Device', ''))
+    def __init__(self, title="Robot Listener", id_config=None, testpath=None, useselector=False):
+        if not id_config:
+            id_config = default_id_config
+
+        self._id_data = KeyValueModel()
+        self._populate_id_data(id_config)
+
         self._results = ResultModel()
         self._runner = None
         self.running = False
@@ -145,10 +147,14 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def _input_filter(self, input):
         #TODO this does not consider user filter yet
-        if input:
-            self._id_data.setValue('devicekey', input)
-            self.suitestate = TestSuiteModel.STATE_READY
-            self._allow_start()
+        inputs = input.split('\n')
+        for input in inputs:
+            key, ready = self.input_filter.filter(input, self._id_data)
+            if key:
+                self._id_data.setValue(key, input)
+            if ready:
+                self.suitestate = TestSuiteModel.STATE_READY
+                self._allow_start()
 
     def _allow_start(self):
         self.asyncInstructions(self._id_data.getValue(self.DEVICEKEY), "Press start to start test", callback=self._start_suite, control=["Start"])
@@ -266,5 +272,14 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             for item in ids.items():
                 variables.append("{0}:{1}".format(item[0], item[1]))
         return variables
+
+    def _populate_id_data(self, id_config):
+        ids = IdentifierListSchema().loads(id_config)
+        import importlib
+        module = importlib.import_module(ids.module)
+        filter_class = getattr(module, ids.implementation)
+        self.input_filter = filter_class(ids.identifiers)
+        for id in ids.identifiers:
+            self._id_data.add(id.key, KeyValue(id.name, ""), id.possibles)
 
     DEVICEKEY = 'devicekey'

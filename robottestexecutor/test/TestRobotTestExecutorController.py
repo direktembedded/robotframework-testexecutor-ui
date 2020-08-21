@@ -21,7 +21,7 @@ config = '''{
 
     "proportion": {
       "title": 0.1,
-      "identification": 0.1,
+      "identification": 0.13,
       "instructions": 0.4,
       "status": 0.04
     },
@@ -54,7 +54,7 @@ config = '''{
     },
 
     "identification": {
-      "proportion": {"input": 0.4},
+      "proportion": {"input": 0.28},
       "item": { 
             "proportion": {
               "name": 0.4
@@ -81,34 +81,6 @@ config = '''{
 }
 '''
 
-# TODO continue to make default behaviour for id list
-id_config = {
-    "class": {
-        "DefaultIdentification": {
-            "module": "",
-            "init_values": [
-                {
-                    "device": {
-                        "name": "Device"
-                    }
-                },
-                {
-                    "serial": {
-                        "name": "Serial No"
-                    }
-                },
-                {
-                    "model": {
-                        "name": "Model",
-                        "possibles": ["Simple", "Another", "Super SKU"]
-                    }
-                }
-            ]
-        }
-    }
-}
-
-
 if __name__ == "__main__":
     import testexecutor as te
 
@@ -118,6 +90,7 @@ if __name__ == "__main__":
 
     mySuiteGroup = TestSuiteGroup()
     #suite = SampleTestSuiteWrapper("Diagnostics")
+    # TODO when moving to application need to catch ValidationError and report nicely to user on command line
     suite = TestExecutorController("Test Suite", testpath=test_path, useselector=True)
     mySuiteGroup.addData(suite)
 
