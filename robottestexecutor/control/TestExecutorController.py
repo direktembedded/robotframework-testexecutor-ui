@@ -7,6 +7,7 @@ Licensed under BSD-3-Clause, refer LICENSE
 import threading
 from multiprocessing import Pipe
 from robot import run
+from robot.errors import DataError
 from robot.testdoc import TestSuiteFactory
 from testexecutor.model.TestSuiteModel import TestSuiteModel
 from testexecutor.model.KeyValueModel import KeyValueModel, KeyValue
@@ -178,7 +179,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             newstate = st
         return newstate
 
-    def _set_controller_data(self, controller, include_tags=[], suitenames=[]):
+    def _set_controller_data(self, controller, include_tags=[], suitenamesin=[]):
         """
 
         :param controller:
@@ -189,34 +190,43 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         tests = self.testpath
         variables = ["dummyvar:true"]
 
-        suitestructure = parse(tests,
-                               variable=variables,
-                               include=include_tags,
-                               suite=suitenames
-                               )
         suites.clear()
         tags = []
         suitenames = []
-        # TODO subdirectories need to have their suites extracted
-        if len(suitestructure.tests) > 0:
-            for test in suitestructure.tests:
-                data = [test.name, test.doc]
-                suites.appendChild(data)
-        else:
-            for suite in suitestructure.suites:
-                suitenames.append(suite.name)
-                data = [suite.name, suite.doc]
-                newparent = suites.appendChild(data)
-                for test in suite.tests:
+
+        dataError = None
+        try:
+            suitestructure = parse(tests,
+                                   variable=variables,
+                                   include=include_tags,
+                                   suite=suitenamesin
+                                   )
+            # TODO subdirectories need to have their suites extracted
+            if len(suitestructure.tests) > 0:
+                for test in suitestructure.tests:
                     data = [test.name, test.doc]
-                    newparent.appendChild(data)
-                    for tag in test.tags:
-                        if tag not in tags:
-                            tags.append(tag)
-        if len(tags) > 0:
-            tags.insert(0, '')
-        if len(suitenames) > 0:
-            suitenames.insert(0, '')
+                    suites.appendChild(data)
+            else:
+                for suite in suitestructure.suites:
+                    suitenames.append(suite.name)
+                    data = [suite.name, suite.doc]
+                    newparent = suites.appendChild(data)
+                    for test in suite.tests:
+                        data = [test.name, test.doc]
+                        newparent.appendChild(data)
+                        for tag in test.tags:
+                            if tag not in tags:
+                                tags.append(tag)
+            if len(tags) > 0:
+                tags.insert(0, '')
+            if len(suitenames) > 0:
+                suitenames.insert(0, '')
+        except DataError as err:
+            dataError = err
+
+        if dataError:
+            raise dataError
+
         return tags, suitenames
 
     def _get_execution_info(self):
