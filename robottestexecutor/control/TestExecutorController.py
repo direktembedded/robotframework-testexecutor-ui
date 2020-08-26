@@ -66,8 +66,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
     def start(self):
         if not self._runner:
             #self._runner = threading.Thread(target=self._thread_run, args=(self.exampletest,))
-            self._runner = threading.Thread(target=self._process_run, args=())
-            self._runner.start()
+            self._process_run()
         else:
             self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
 
@@ -88,12 +87,15 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self.parent_conn, child_conn = Pipe()
         p = RobotProcessController(child_conn)
         p.start()
+        self._runner = threading.Thread(target=self._parent_run, args=(p,))
+        self._runner.start()
 
+    def _parent_run(self, child_process):
         parent_conn = self.parent_conn
         self.running = True
         active_test = None
         self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
-        while p.is_alive() and self.running:
+        while child_process.is_alive() and self.running:
             if parent_conn.poll(1):
                 rc = parent_conn.recv()
                 if rc.op == IPCTypes.FEEDBACK:
@@ -125,7 +127,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                     #print("\nTEC log_message", rc.data.title, rc.data.message, "END\n")
                 #print(rc)
 
-        if self._terminateProcess(p):
+        if self._terminateProcess(child_process):
             if active_test:
                 self.testCompleted(active_test, False)
             self.suitestate = TestSuiteModel.STATE_STOPPED
