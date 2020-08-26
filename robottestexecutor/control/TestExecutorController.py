@@ -119,7 +119,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 elif rc.op == IPCTypes.END_EXECUTION:
                     self.clear_results_on_start = True
                     if self.controller:
-                        self._allow_start()
+                        self._allow_start(self.input_filter.instructions)
                 elif rc.op == IPCTypes.LOG_MESSAGE:
                     self.userInstructions(rc.data.title, rc.data.message, expectResponse=False)
                     #print("\nTEC log_message", rc.data.title, rc.data.message, "END\n")
@@ -146,7 +146,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
 
     def _input_filter(self, input):
-        #TODO this does not consider user filter yet
         inputs = input.split('\n')
         for input in inputs:
             key, ready = self.input_filter.filter(input, self._id_data)
@@ -154,10 +153,10 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 self._id_data.setValue(key, input)
             if ready:
                 self.suitestate = TestSuiteModel.STATE_READY
-                self._allow_start()
+                self._allow_start(self.input_filter.instructions)
 
-    def _allow_start(self):
-        self.asyncInstructions(self._id_data.getValue(self.DEVICEKEY), "Press start to start test", callback=self._start_suite, control=["Start"])
+    def _allow_start(self, instructions="Press start to start test"):
+        self.asyncInstructions(self._id_data.getValue(self.DEVICEKEY), instructions, callback=self._start_suite, control=["Start"])
         self.suitestate = TestSuiteModel.STATE_RESTART
 
     def _start_suite(self, response=None):
@@ -166,13 +165,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self.start()
 
     def _stop_suite(self):
-        #TODO tell robot run to stop
         self.running = False
         self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
-        pass
-
-    def _clear_suite(self):
-        self.clear()
 
     def _state_control_callback(self, st):
         newstate = None
@@ -278,8 +272,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         import importlib
         module = importlib.import_module(ids.module)
         filter_class = getattr(module, ids.implementation)
-        self.input_filter = filter_class(ids.identifiers)
-        for id in ids.identifiers:
-            self._id_data.add(id.key, KeyValue(id.name, ""), id.possibles)
+        self.input_filter = filter_class(ids.identifiers, self._id_data)
 
     DEVICEKEY = 'devicekey'

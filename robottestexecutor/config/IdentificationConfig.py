@@ -1,5 +1,5 @@
 """
-Copyright (c) 2020- Direkt, Australia
+Copyright (c) 2020- Sipke Vriend
 Licensed under BSD-3-Clause, refer LICENSE
 """
 from dataclasses import dataclass, field
@@ -8,19 +8,19 @@ from typing import List, Optional
 import marshmallow_dataclass
 import marshmallow.validate
 
-# TODO continue to make default behaviour for id list
+# TODO add a directory path so user can specify it be added to python module path
 default_id_config = '''{
     "module": "robottestexecutor.config.DefaultIdentification",
     "implementation": "DefaultIdentification",
     "identifiers": [
                 {
-                    "key": "device",
-                    "name": "Device",
+                    "key": "serial",
+                    "name": "Serial No",
                     "match": "\\\d*"
                 },
                 {
-                    "key": "serial",
-                    "name": "Serial No",
+                    "key": "device",
+                    "name": "Device",
                     "match": ".*"
                 },
                 {
