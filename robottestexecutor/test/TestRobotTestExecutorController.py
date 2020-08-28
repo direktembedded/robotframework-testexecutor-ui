@@ -99,7 +99,7 @@ if __name__ == "__main__":
     #import sys
     #sys.argv += ['--style', 'fusion']
 
-    windowModel = MultiTestWindowModel(mySuiteGroup, "Sample Controller (TE {0})".format(te.__version__))
+    windowModel = MultiTestWindowModel(mySuiteGroup, "Sample Controller".format(te.__version__))
     windowModel.config = config
 
     exit(windowModel.exec())
