@@ -7,13 +7,18 @@ from multiprocessing import Process
 from robot import run
 from robottestexecutor.proxy.TestExecutorListener import TestExecutorListener
 from robottestexecutor.proxy.TestExecutorLogger import TestExecutorLogger
-from robottestexecutor.proxy.TestExecutorIPC import IPCCommands, TestExecutionInfo
+from robottestexecutor.proxy.TestExecutorIPC import IPCCommands, TestExecutionInfo, IPCMessage, IPCTypes, \
+    TestExecutorIPC
+from test_archiver.ArchiverRobotListener import ArchiverRobotListener
+
 
 class RobotProcessController(Process):
 
-    def __init__(self, connection):
+    def __init__(self, connection, db_config_file):
         self.listener = TestExecutorListener(connection)
         self.logger = TestExecutorLogger(connection)
+        self.db_listener = None
+        self._db_config_file = db_config_file
         self.running = False
         Process.__init__(self, target=self.process, args=(connection,))
 
@@ -38,13 +43,18 @@ class RobotProcessController(Process):
                         includes = rc.data[TestExecutionInfo.TAGS]
                     if TestExecutionInfo.VARIABLES in rc.data:
                         variables =rc.data[TestExecutionInfo.VARIABLES]
-                    self._process(source, suites, tests, includes, variables)
+                    self._process(connection, source, suites, tests, includes, variables)
 
-    def _process(self, source, suites, tests, includes, variables):
+    def _process(self, connection, source, suites, tests, includes, variables):
+        self._try_init_db(connection)
+        metadata = variables.copy()
         variables.append("CUSTOMDIALOGS:robottestexecutor.proxy.TestExecutorDialogs")
         from robot.output import LOGGER
         LOGGER.register_logger(self.logger)
-        run(source, listener=self.listener,
+        listeners = [self.listener]
+        if self.db_listener:
+            listeners.append(self.db_listener)
+        run(source, listener=listeners,
             suite=suites,
             test=tests,
             variable=variables,
@@ -52,11 +62,27 @@ class RobotProcessController(Process):
             prerunmodifier=["robottestexecutor.control.TestExecutorSuitePreRunModifier"],  # TODO probably not using this
             console="none",
             loglevel="INFO",
+            metadata=metadata,
+            xoutputtimeinfo=True,
+            formattimestamp="iso8601utc",
             output="NONE",
             report="NONE",
             log="NONE"
             )
         LOGGER.unregister_logger(self.logger)
+
+    def _try_init_db(self, connection):
+        success = False
+        try:
+            if self._db_config_file:
+                self.db_listener = ArchiverRobotListener(self._db_config_file, adjust_with_system_timezone=True)
+            success = True
+        except FileNotFoundError as fe:
+            connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(fe.strerror, fe.filename)))
+        except Exception as ex:
+            from sys import exc_info
+            connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage("SYSTEM ERROR", str(exc_info()))))
+        return success
 
     def _get_variables(self, dict):
         variables = []

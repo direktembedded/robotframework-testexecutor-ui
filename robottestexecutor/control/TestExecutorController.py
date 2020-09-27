@@ -34,10 +34,11 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     INSTANCE = 0
 
-    def __init__(self, title="Robot Listener", id_config=None, testpath=None, useselector=False):
+    def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, testpath=None, useselector=False):
         if not id_config:
             id_config = default_id_config
 
+        self._db_config_file = db_config_file
         self._id_data = KeyValueModel()
         self._populate_id_data(id_config)
 
@@ -84,11 +85,17 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             )
 
     def _process_run(self):
-        self.parent_conn, child_conn = Pipe()
-        p = RobotProcessController(child_conn)
-        p.start()
-        self._runner = threading.Thread(target=self._parent_run, args=(p,))
-        self._runner.start()
+        try:
+            self.parent_conn, child_conn = Pipe()
+            p = RobotProcessController(child_conn, self._db_config_file)
+            p.start()
+            self._runner = threading.Thread(target=self._parent_run, args=(p,))
+            self._runner.start()
+        except FileNotFoundError as fe:
+            self.userInstructions(fe.strerror, fe.filename, expectResponse=False)
+        except Exception as ex:
+            from sys import exc_info
+            self.userInstructions("SYSTEM ERROR", str(exc_info()), expectResponse=False)
 
     def _parent_run(self, child_process):
         parent_conn = self.parent_conn

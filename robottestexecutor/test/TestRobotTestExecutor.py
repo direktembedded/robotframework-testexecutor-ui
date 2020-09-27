@@ -12,7 +12,7 @@ config = '''{
 
     "proportion": {
       "title": 0.1,
-      "identification": 0.07,
+      "identification": 0.12,
       "instructions": 0.4,
       "status": 0.04
     },
@@ -45,7 +45,7 @@ config = '''{
     },
 
     "identification": {
-      "proportion": {"input": 0.5},
+      "proportion": {"input": 0.25},
       "item": { 
             "proportion": {
               "name": 0.4
@@ -79,11 +79,12 @@ if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     test_path = os.path.join(current_path, 'suites')
 
+    db_file = os.path.join(current_path, "test_db_config.json")
     mySuiteGroup = TestSuiteGroup()
-    mySuiteGroup.addData(TestExecutorController("Station 1", testpath=os.path.join(test_path, "MisspelledSuite.robot")))
-    mySuiteGroup.addData(TestExecutorController("Station 2", testpath=os.path.join(test_path, "CustomDialogsVerificationSuite.robot")))
-    mySuiteGroup.addData(TestExecutorController("Station 3", testpath=os.path.join(test_path, "FeedbackVerificationSuite.robot")))
-    mySuiteGroup.addData(TestExecutorController("Station 4", testpath=os.path.join(test_path, "LargeTestCountSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 1", db_config_file=db_file, testpath=os.path.join(test_path, "MisspelledSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 2", db_config_file=db_file, testpath=os.path.join(test_path, "CustomDialogsVerificationSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 3", db_config_file=db_file, testpath=os.path.join(test_path, "FeedbackVerificationSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 4", db_config_file=db_file, testpath=os.path.join(test_path, "LargeTestCountSuite.robot")))
 
     # messy style: material
     # workable styles: fusion, imagine, universal
