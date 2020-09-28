@@ -14,9 +14,9 @@ from testexecutor.model.KeyValueModel import KeyValueModel, KeyValue
 from testexecutor.model.ResultModel import ResultModel
 from testexecutor.model.TreeSelectorModel import TreeSelectorModel
 from testexecutor.model.TestSuiteControlModel import TestSuiteControlModel
-from robottestexecutor.proxy.RobotProcessController import RobotProcessController
+from ..proxy.RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
-from robottestexecutor.proxy.TestExecutorIPC import IPCTypes, IPCCommand, IPCCommands, TestExecutionInfo
+from ..proxy.TestExecutorIPC import IPCTypes, IPCCommand, IPCCommands, TestExecutionInfo
 from ..config.IdentificationConfig import IdentifierListSchema
 from ..config.IdentificationConfig import default_id_config
 
@@ -40,6 +40,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
         self._db_config_file = db_config_file
         self._id_data = KeyValueModel()
+        self.id_config = None
         self._populate_id_data(id_config)
 
         self._results = ResultModel()
@@ -244,7 +245,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         else:
             info = {}
             info[TestExecutionInfo.VARIABLES] = self._get_variables()
-            info[TestExecutionInfo.SOURCE] = self.testpath
+            # TODO verify file/directory exists, here or in Process controller.
+            info[TestExecutionInfo.SOURCE] = self._get_test_path()
             return info
 
     def _get_execution_info_from_controller(self):
@@ -276,11 +278,15 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 variables.append("{0}:{1}".format(item[0], item[1]))
         return variables
 
+    def _get_test_path(self):
+        test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data)
+        return test_suite
+
     def _populate_id_data(self, id_config):
-        ids = IdentifierListSchema().loads(id_config)
+        self.id_config = IdentifierListSchema().loads(id_config)
         import importlib
-        module = importlib.import_module(ids.module)
-        filter_class = getattr(module, ids.implementation)
-        self.input_filter = filter_class(ids.identifiers, self._id_data)
+        module = importlib.import_module(self.id_config.module)
+        filter_class = getattr(module, self.id_config.implementation)
+        self.input_filter = filter_class(self.id_config, self._id_data)
 
     DEVICEKEY = 'devicekey'

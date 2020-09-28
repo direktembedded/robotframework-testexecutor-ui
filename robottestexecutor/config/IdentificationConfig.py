@@ -19,16 +19,36 @@ default_id_config = '''{
                     "match": "\\\d*"
                 },
                 {
-                    "key": "device",
-                    "name": "Device",
+                    "key": "info",
+                    "name": "Info",
                     "match": ".*"
                 },
                 {
                     "key": "model",
                     "name": "Model",
-                    "possibles": ["Simple", "Another", "Super SKU"]
+                    "possibles": ["ModelA", "ModelB", "ModelC"]
+                }
+            ],
+    "suites": { 
+            "path": "./suites",
+            "selector": [
+                {
+                    "id": "model",
+                    "match": "ModelA.*",
+                    "suite": "ModelA-Suite.robot"
+                },
+                {
+                    "id": "model",
+                    "match": "ModelB-Suite",
+                    "suite": "ModelB-Suite.robot"
+                },
+                {
+                    "id": "model",
+                    "match": "ModelC.*",
+                    "suite": "ModelC-Suite.robot"
                 }
             ]
+        }
 }
 '''
 
@@ -43,10 +63,24 @@ class Identifier:
 
 
 @dataclass
-class IdentifierList:
-    module: str = field(default="robottestexecutor.config")
+class SuiteSelector:
+    id: str = field()
+    match: str = field()
+    suite: Optional[str]
+
+
+@dataclass
+class SuiteInfo:
+    path: str = field(default=".")
+    selector: List[SuiteSelector] = field(default_factory=list)
+
+
+@dataclass
+class IdentifierConfig:
+    suites: SuiteInfo = field()
+    module: str = field(default="robottestexecutor.config.DefaultIdentification")
     implementation: str = field(default="DefaultIdentification")
     identifiers: List[Identifier] = field(default_factory=list)
 
 
-IdentifierListSchema = marshmallow_dataclass.class_schema(IdentifierList)
+IdentifierListSchema = marshmallow_dataclass.class_schema(IdentifierConfig)
