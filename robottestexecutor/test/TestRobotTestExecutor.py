@@ -81,10 +81,10 @@ if __name__ == "__main__":
 
     db_file = os.path.join(current_path, "test_db_config.json")
     mySuiteGroup = TestSuiteGroup()
-    mySuiteGroup.addData(TestExecutorController("Station 1", db_config_file=db_file, testpath=os.path.join(test_path, "MisspelledSuite.robot")))
-    mySuiteGroup.addData(TestExecutorController("Station 2", db_config_file=db_file, testpath=os.path.join(test_path, "CustomDialogsVerificationSuite.robot")))
-    mySuiteGroup.addData(TestExecutorController("Station 3", db_config_file=db_file, testpath=os.path.join(test_path, "FeedbackVerificationSuite.robot")))
-    mySuiteGroup.addData(TestExecutorController("Station 4", db_config_file=db_file, testpath=os.path.join(test_path, "LargeTestCountSuite.robot")))
+    mySuiteGroup.addData(TestExecutorController("Station 1", db_config_file=db_file))
+    mySuiteGroup.addData(TestExecutorController("Station 2", db_config_file=db_file))
+    mySuiteGroup.addData(TestExecutorController("Station 3", db_config_file=db_file))
+    mySuiteGroup.addData(TestExecutorController("Station 4", db_config_file=db_file))
 
     # messy style: material
     # workable styles: fusion, imagine, universal

@@ -34,7 +34,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     INSTANCE = 0
 
-    def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, testpath=None, useselector=False):
+    def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, useselector=False):
         if not id_config:
             id_config = default_id_config
 
@@ -54,7 +54,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         TestExecutorListener.__init__(self, model=self)
         self.selected_tags = []
         self.selected_suitenames = []
-        self.testpath = testpath
         if useselector:
             self.controller = TestSuiteControlModel(filtercallback=self._selectionFilterChanged, filters=default_filters)
             self.controller.testselector = TreeSelectorModel()
@@ -67,23 +66,12 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     def start(self):
         if not self._runner:
-            #self._runner = threading.Thread(target=self._thread_run, args=(self.exampletest,))
             self._process_run()
         else:
             self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
 
     def close(self):
         self.running = False
-
-    def _thread_run(self, testsuite):
-        # TODO possibly temporary entry/start method.
-        #print("threadrun", self._instance)
-        run(testsuite, listener=self,
-            variable=["CUSTOMDIALOGS:robottestexecutor.TestExecutorDialogs"],
-            output="{0}-output.xml".format(self._instance),
-            report="{0}-report.html".format(self._instance),
-            log="{0}-log.html".format(self._instance)
-            )
 
     def _process_run(self):
         try:
