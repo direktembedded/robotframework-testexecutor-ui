@@ -30,7 +30,7 @@ default_id_config = '''{
                 }
             ],
     "suites": { 
-            "path": "./suites",
+            "path": "./models",
             "selector": [
                 {
                     "id": "model",
@@ -39,7 +39,7 @@ default_id_config = '''{
                 },
                 {
                     "id": "model",
-                    "match": "ModelB-Suite",
+                    "match": "ModelB",
                     "suite": "ModelB-Suite.robot"
                 },
                 {
