@@ -79,7 +79,10 @@ if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     test_path = os.path.join(current_path, 'suites')
 
-    db_file = os.path.join(current_path, "test_db_config.json")
+    # sqlite database is the default and will create a robot_te_results.db database.
+    # An example postgresql config file is also provided but requires server access to work.
+    #db_file = os.path.join(current_path, "testarchiver_postgre_db_config.json")
+    db_file = os.path.join(current_path, "testarchiver_sqlite_db_config.json")
     mySuiteGroup = TestSuiteGroup()
     mySuiteGroup.addData(TestExecutorController("Station 1", db_config_file=db_file))
     mySuiteGroup.addData(TestExecutorController("Station 2", db_config_file=db_file))
