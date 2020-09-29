@@ -32,7 +32,10 @@ Forced Fail Both
 Verify Device ID
     Log                This test waits a little and then verifies if your device id value is ${expected_key}
     Sleep              2
-    Should Be Equal    ${device}   ${expected_key}   Invalid device
+    Should Be Equal    ${serial}   ${expected_key}   Invalid device
+
+Test Without Log
+    Should Be Equal    Same  Same
 
 Force Internal Error
     An Unknown Keyword
