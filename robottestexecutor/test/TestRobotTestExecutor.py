@@ -77,7 +77,6 @@ if __name__ == "__main__":
     import os
 
     current_path = os.path.dirname(os.path.abspath(__file__))
-    test_path = os.path.join(current_path, 'suites')
 
     # sqlite database is the default and will create a robot_te_results.db database.
     # An example postgresql config file is also provided but requires server access to work.
@@ -97,29 +96,3 @@ if __name__ == "__main__":
     windowModel.config = config
 
     exit(windowModel.exec())
-
-'''
-import sys, os
-from robot import run
-from robottestexecutor.TestExecutorController import TestExecutorController
-
-
-
-def run_example(test_path):
-    """
-    Kick off the robot example test run
-    :param test_path: name of a robot file to execute
-    :return: None
-    """
-    path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.insert(0, path)
-    run(test_path, listener=TestExecutorController(), variable="TESTEXECUTORDIALOGS:robottestexecutor.TestExecutorDialogs")
-
-
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print("Please supply robot script name as argument")
-
-    run_example(sys.argv[1])
-'''
