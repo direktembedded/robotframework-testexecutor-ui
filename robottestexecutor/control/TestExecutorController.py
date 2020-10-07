@@ -34,7 +34,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     INSTANCE = 0
 
-    def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, useselector=False):
+    def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, useselector=False, testpath=None):
         if not id_config:
             id_config = default_id_config
 
@@ -42,6 +42,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self._id_data = KeyValueModel()
         self.id_config = None
         self._populate_id_data(id_config)
+        self.testpath = testpath
 
         self._results = ResultModel()
         self._runner = None

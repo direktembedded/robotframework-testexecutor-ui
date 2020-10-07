@@ -91,7 +91,7 @@ if __name__ == "__main__":
     mySuiteGroup = TestSuiteGroup()
     #suite = SampleTestSuiteWrapper("Diagnostics")
     # TODO when moving to application need to catch ValidationError and report nicely to user on command line
-    suite = TestExecutorController("Test Suite", testpath=test_path, useselector=True)
+    suite = TestExecutorController("Test Suite", useselector=True, testpath=test_path)
     mySuiteGroup.addData(suite)
 
     # messy style: material
