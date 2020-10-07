@@ -80,13 +80,21 @@ class TestExecutorDialogs:
         BuiltIn().set_suite_variable("${logdestination}", "test")
 
     def user_repeat_on_fail(self, keyword, *args):
-        count = 3
+        count = int(BuiltIn().get_variable_value("${user_repeat_on_fail_count}", default=100))
+        exit_on_fail = bool(BuiltIn().get_variable_value("${user_repeat_on_fail_exit}", default=True))
+        keyword_err = None
         for step in range(count):
             try:
                 BuiltIn().run_keyword(keyword, *args)
+                keyword_err = None
+                break
             except ExecutionFailed as err:
+                keyword_err = err
                 if not self._ask_user_to_repeat(err):
-                    raise err
+                    keyword_err.exit = exit_on_fail
+                    raise keyword_err
+        if keyword_err:
+            raise keyword_err
 
     def _ask_user_to_repeat(self, err):
         connection = BuiltIn().get_variable_value("${connection}")
