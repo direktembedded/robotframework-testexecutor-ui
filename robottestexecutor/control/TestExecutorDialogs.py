@@ -1,3 +1,6 @@
+"""
+This is a library to use if robot is run in same Process as testexecutor. Otherwise, use the version in proxy package.
+"""
 from robot.libraries.BuiltIn import BuiltIn
 from robot.version import get_version
 

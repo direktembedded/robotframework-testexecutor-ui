@@ -1,3 +1,7 @@
+"""
+Copyright (c) 2020- Sipke Vriend
+Licensed under BSD-3-Clause, refer LICENSE
+"""
 from testexecutor.model.TestSuiteGroup import TestSuiteGroup
 from testexecutor.model.MultiTestWindowModel import MultiTestWindowModel
 from robottestexecutor.control.TestExecutorController import TestExecutorController
