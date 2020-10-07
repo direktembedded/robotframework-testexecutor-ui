@@ -27,6 +27,7 @@ Unimplemented: 'get_value_from_user', 'get_selection_from_user', 'get_selections
 from robot.libraries.BuiltIn import BuiltIn
 from robot.version import get_version
 from robottestexecutor.proxy.TestExecutorIPC import TestExecutorIPC, IPCMessage, IPCTypes
+from robot.errors import ExecutionFailed
 
 __version__ = get_version()
 __all__ = ['execute_manual_step',
@@ -77,6 +78,25 @@ class TestExecutorDialogs:
 
     def log_to_test(self):
         BuiltIn().set_suite_variable("${logdestination}", "test")
+
+    def user_repeat_on_fail(self, keyword, *args):
+        count = 3
+        for step in range(count):
+            try:
+                BuiltIn().run_keyword(keyword, *args)
+            except ExecutionFailed as err:
+                if not self._ask_user_to_repeat(err):
+                    raise err
+
+    def _ask_user_to_repeat(self, err):
+        connection = BuiltIn().get_variable_value("${connection}")
+        title = "Repeat Step?"
+        fail_msg = "{} {}".format(BuiltIn().get_variable_value("${TEST NAME}"), "Failed")
+        message = '\n'.join([fail_msg, str(err)])
+        connection.send(TestExecutorIPC(IPCTypes.EXECUTE_MANUAL_STEP, IPCMessage(title, message)))
+        response = connection.recv()
+        return not (response != "yes")
+
 
 
 def _validate_user_input(value):
