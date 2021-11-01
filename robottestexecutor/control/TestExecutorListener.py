@@ -19,19 +19,19 @@ class TestExecutorListener(TestSuiteListener):
         print("\nTestExecutorListener.start_suite", name, result.starttime)
         # This provides a link between TestExecutorDialogs and TextExecutorListener!
         BuiltIn().set_suite_variable("${testexecutor}", self)
-        self.suiteStart(name.name)
+        self.suite_start(name.name)
 
     def start_test(self, name, result):
         print("\nTestExecutorListener.start_test", name, result.status, result.passed)
-        self.testStarted(name.name)
+        self.test_started(name.name)
 
     def end_test(self, name, result):
         print("\nTestExecutorListener.end_test", name, result.status, result.passed)
-        self.testCompleted(name.name, result.passed)
+        self.test_completed(name.name, result.passed)
 
     def end_suite(self, name, result):
         print("\nTestExecutorListener.end_suite", name, result.endtime)
-        self.suiteEnd(name.name)
+        self.suite_end(name.name)
 
     def log_message(self, msg, level=None):
         print("log_message", msg)

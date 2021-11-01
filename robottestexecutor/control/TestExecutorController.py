@@ -82,10 +82,10 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             self._runner = threading.Thread(target=self._parent_run, args=(p,))
             self._runner.start()
         except FileNotFoundError as fe:
-            self.userInstructions(fe.strerror, fe.filename, expectResponse=False)
+            self.user_instructions(fe.strerror, fe.filename, expectResponse=False)
         except Exception as ex:
             from sys import exc_info
-            self.userInstructions("SYSTEM ERROR", str(exc_info()), expectResponse=False)
+            self.user_instructions("SYSTEM ERROR", str(exc_info()), expectResponse=False)
 
     def _parent_run(self, child_process):
         parent_conn = self.parent_conn
@@ -98,20 +98,20 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 if rc.op == IPCTypes.FEEDBACK:
                     self.feedback(rc.data.title, rc.data.message)
                 elif rc.op == IPCTypes.PAUSE_EXECUTION:
-                    response = self.userInstructions("", rc.data, expectResponse=True)
+                    response = self.user_instructions("", rc.data, expectResponse=True)
                     parent_conn.send(response)
                 elif rc.op == IPCTypes.EXECUTE_MANUAL_STEP:
-                    response = self.userDecision(rc.data.title, rc.data.message)
+                    response = self.user_decision(rc.data.title, rc.data.message)
                     parent_conn.send(response)
                 elif rc.op == IPCTypes.START_SUITE:
-                    self.suiteStart(rc.data)
+                    self.suite_start(rc.data)
                 elif rc.op == IPCTypes.END_SUITE:
-                    self.suiteEnd(rc.data)
+                    self.suite_end(rc.data)
                 elif rc.op == IPCTypes.START_TEST:
                     active_test = rc.data.name
-                    self.testStarted(rc.data.name)
+                    self.test_started(rc.data.name)
                 elif rc.op == IPCTypes.END_TEST:
-                    self.testCompleted(rc.data.name, rc.data.result)
+                    self.test_completed(rc.data.name, rc.data.result)
                     active_test = None
                     if rc.data.message:
                         self.feedback(rc.data.name, rc.data.message)
@@ -120,13 +120,13 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                     if self.controller:
                         self._allow_start(self.input_filter.instructions)
                 elif rc.op == IPCTypes.LOG_MESSAGE:
-                    self.userInstructions(rc.data.title, rc.data.message, expectResponse=False)
+                    self.user_instructions(rc.data.title, rc.data.message, expectResponse=False)
                     #print("\nTEC log_message", rc.data.title, rc.data.message, "END\n")
                 #print(rc)
 
         if self._terminateProcess(child_process):
             if active_test:
-                self.testCompleted(active_test, False)
+                self.test_completed(active_test, False)
             self.suitestate = TestSuiteModel.STATE_STOPPED
         self._runner = None
 
@@ -155,7 +155,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 self._allow_start(self.input_filter.instructions)
 
     def _allow_start(self, instructions="Press start to start test"):
-        self.asyncInstructions(self._id_data.getValue(self.DEVICEKEY), instructions, callback=self._start_suite, control=["Start"])
+        self.async_instructions(self._id_data.getValue(self.DEVICEKEY), instructions, callback=self._start_suite, control=["Start"])
         self.suitestate = TestSuiteModel.STATE_RESTART
 
     def _start_suite(self, response=None):
