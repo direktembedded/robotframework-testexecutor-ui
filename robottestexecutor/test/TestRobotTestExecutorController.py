@@ -77,7 +77,49 @@ config = '''{
     "instructions": {
         "color": "yellow",
         "proportion": {"header": 0.1, "textHeight": 0.05, "control": 0.1}
-    }
+    },
+    
+    "controller": {
+        "proportion": {
+          "indicator": 0.02,
+          "name": 0.15,
+          "count": 0.03
+        },
+        "header": {
+            "color": {"default": "lightgray"},
+            "text": {"color": "green"},
+            "name": "Test",
+            "description": "Description"
+        },
+        "section": {
+            "color": {"default": "#8e8a8a", "selected": "goldenrod"},
+            "text": {"color": {"default": "black"}},
+            "border": {"color": "lightgray", "width": 1},
+            "dimension": {"height": 25}
+        },
+        "row": {
+            "color": {"default": "snow", "alternate": "whitesmoke", "selected": "burlywood"},
+            "text": {"color": {"default": "black"}}
+        },
+        "indicators": {"0":"⮞", "1":"⮟"},
+        "viewableCount": 25,
+        "filter": {
+            "item": {
+                "list": {
+                    "background": {"color": "lightgray"},
+                    "border": {"color": "green"}
+                },
+                "item": {                
+                    "background": {"color": "white"},
+                    "border": {"color": "green"},
+                    "button": {
+                        "gradient": {"start": {"off": "darkgreen", "pressed": "white"},
+                                     "end": {"off": "white", "pressed": "goldenrod"}} 
+                    }
+                }
+            }
+        }
+    }    
 }
 '''
 
@@ -95,9 +137,9 @@ if __name__ == "__main__":
     mySuiteGroup.addData(suite)
 
     # messy style: material
-    # workable styles: fusion, imagine, universal
-    #import sys
-    #sys.argv += ['--style', 'fusion']
+    # workable styles: Fusion, imagine, universal
+    import sys
+    sys.argv += ['--style', 'Fusion']
 
     windowModel = MultiTestWindowModel(mySuiteGroup, "Sample Controller".format(te.__version__))
     windowModel.config = config
