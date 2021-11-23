@@ -9,3 +9,5 @@ robot-testexecutor.egg-info/*
 log.html
 report.html
 output.xml
+
+todo.txt

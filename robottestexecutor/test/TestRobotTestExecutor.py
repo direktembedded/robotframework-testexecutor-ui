@@ -96,7 +96,8 @@ if __name__ == "__main__":
 
     # messy style: material
     # workable styles: fusion, imagine, universal
-    #sys.argv += ['--style', 'fusion']
+    import sys
+    sys.argv += ['--style', 'Fusion']
 
     windowModel = MultiTestWindowModel(mySuiteGroup, "Sample Multiple Runner (TE {0})".format(te.__version__))
     windowModel.config = config

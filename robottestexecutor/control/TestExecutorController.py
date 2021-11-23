@@ -12,7 +12,6 @@ from robot.testdoc import TestSuiteFactory
 from testexecutor.model.TestSuiteModel import TestSuiteModel
 from testexecutor.model.KeyValueModel import KeyValueModel, KeyValue
 from testexecutor.model.ResultModel import ResultModel
-from testexecutor.model.TreeSelectorModel import TreeSelectorModel
 from testexecutor.model.TestSuiteControlModel import TestSuiteControlModel
 from ..proxy.RobotProcessController import RobotProcessController
 from .TestExecutorListener import TestExecutorListener
@@ -57,7 +56,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self.selected_suitenames = []
         if useselector:
             self.controller = TestSuiteControlModel(filtercallback=self._selectionFilterChanged, filters=default_filters)
-            self.controller.testselector = TreeSelectorModel()
             tags = []
             suitenames = []
             if self.testpath:
@@ -200,19 +198,16 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                                    include=include_tags,
                                    suite=suitenamesin
                                    )
-            # TODO subdirectories need to have their suites extracted
             if len(suitestructure.tests) > 0:
+                parent_suite = "."  # Use current directory symbol to indicate base suite
                 for test in suitestructure.tests:
-                    data = [test.name, test.doc]
-                    suites.appendChild(data)
+                    suites.appendChild(test.name, test.doc, parent_suite)
             else:
                 for suite in suitestructure.suites:
+                    parent_suite = suite.name
                     suitenames.append(suite.name)
-                    data = [suite.name, suite.doc]
-                    newparent = suites.appendChild(data)
                     for test in suite.tests:
-                        data = [test.name, test.doc]
-                        newparent.appendChild(data)
+                        suites.appendChild(test.name, test.doc, parent_suite)
                         for tag in test.tags:
                             if tag not in tags:
                                 tags.append(tag)
@@ -234,7 +229,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         else:
             info = {}
             info[TestExecutionInfo.VARIABLES] = self._get_variables()
-            # TODO verify file/directory exists, here or in Process controller.
+            # TODO verify file/directory exists, here or in Process controller, so as to provide nice feedback to user
             info[TestExecutionInfo.SOURCE] = self._get_test_path()
             return info
 
@@ -268,6 +263,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         return variables
 
     def _get_test_path(self):
+        #TODO should we always load the module, so any changes made are 'live' and do not need a re-start of the
+        # application?
         test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data)
         return test_suite
 
