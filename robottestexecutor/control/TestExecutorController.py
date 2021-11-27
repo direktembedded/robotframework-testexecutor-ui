@@ -83,6 +83,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             self.user_instructions(fe.strerror, fe.filename, expectResponse=False)
         except Exception as ex:
             from sys import exc_info
+            # TODO: this should probably stop the system from continuing, currently does not
             self.user_instructions("SYSTEM ERROR", str(exc_info()), expectResponse=False)
 
     def _parent_run(self, child_process):
@@ -236,16 +237,12 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
     def _get_execution_info_from_controller(self):
 
         tests = []
-        controller = self.controller
-        selection = self.controller.testselector.selection
-        rows = selection.selectedIndexes()
+        rows = self.controller.selectedItems()
         # If any tests are selected then list them and only these will be executed. If none were selected then all
         # will be executed based on suites and tags selected. That is how robot framework executes tests.
-        for index in rows:
-            row = selection.model().itemData(index)
-            if len(row[0].childItems) == 0:
-                test = row[0]
-                tests.append(test.itemData[0])
+        # TODO loop through whole model and find .selected values.
+        for item in rows:
+            tests.append(item.name)
         info = {}
         info[TestExecutionInfo.VARIABLES] = self._get_variables()
         info[TestExecutionInfo.TESTS] = tests
