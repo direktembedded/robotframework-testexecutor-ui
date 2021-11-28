@@ -38,7 +38,6 @@ class TestExecutorLogger:
         blacklist = [execution_ended, 'Created keyword', 'Imported library', 'Initializing namespace', 'In library'
                      'Found test library']
         whitelist = []
-        #print("message from log:", msg.level, msg)
         avoid = (LEVELS[msg.level] < LEVELS['WARN'])
         if avoid:
             if execution_ended in msg.message:

@@ -59,7 +59,6 @@ class RobotProcessController(Process):
             test=tests,
             variable=variables,
             include=includes,
-            prerunmodifier=["robottestexecutor.control.TestExecutorSuitePreRunModifier"],  # TODO probably not using this
             console="none",
             loglevel="INFO",
             metadata=metadata,
