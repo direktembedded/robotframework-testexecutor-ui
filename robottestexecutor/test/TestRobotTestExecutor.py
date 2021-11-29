@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Copyright (c) 2020- Sipke Vriend
 Licensed under BSD-3-Clause, refer LICENSE

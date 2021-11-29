@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Test module to kick off text-executor gui with controller/test selector enabled, so different tests can be run.
 execute as python3 <filename.py>
