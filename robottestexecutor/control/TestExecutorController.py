@@ -14,6 +14,7 @@
 #  limitations under the License.
 
 import threading
+import os
 from multiprocessing import Pipe
 from robot import run
 from robot.errors import DataError
@@ -239,8 +240,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         else:
             info = {}
             info[TestExecutionInfo.VARIABLES] = self._get_variables()
-            # TODO verify file/directory exists, here or in Process controller, so as to provide nice feedback to user
-            info[TestExecutionInfo.SOURCE] = self._get_test_path()
+            test_path = self._get_test_path()
+            info[TestExecutionInfo.SOURCE] = test_path
             return info
 
     def _get_execution_info_from_controller(self):
@@ -272,6 +273,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         #TODO should we always load the module, so any changes made are 'live' and do not need a re-start of the
         # application?
         test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data)
+        if test_suite and test_suite.startswith(".") and self.testpath:
+            test_suite = os.path.join(self.testpath, test_suite)
         return test_suite
 
     def _populate_id_data(self, id_config):
