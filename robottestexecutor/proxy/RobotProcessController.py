@@ -43,8 +43,10 @@ class RobotProcessController(Process):
                     tests = []
                     includes = []
                     variables = []
+                    start = False
                     if TestExecutionInfo.SOURCE in rc.data:
                         source = rc.data[TestExecutionInfo.SOURCE]
+                        start = self._try_find_source(connection, source)
                     if TestExecutionInfo.SUITES in rc.data:
                         suites = rc.data[TestExecutionInfo.SUITES]
                     if TestExecutionInfo.TESTS in rc.data:
@@ -53,7 +55,8 @@ class RobotProcessController(Process):
                         includes = rc.data[TestExecutionInfo.TAGS]
                     if TestExecutionInfo.VARIABLES in rc.data:
                         variables =rc.data[TestExecutionInfo.VARIABLES]
-                    self._process(connection, source, suites, tests, includes, variables)
+                    if start:
+                        self._process(connection, source, suites, tests, includes, variables)
 
     def _process(self, connection, source, suites, tests, includes, variables):
         self._try_init_db(connection)
@@ -80,6 +83,20 @@ class RobotProcessController(Process):
             log="NONE"
             )
         LOGGER.unregister_logger(self.logger)
+
+    def _try_find_source(self, connection, source):
+        import os
+        success = False
+        error = None
+        if not source:
+            error = "Test Suite is not defined"
+        elif not os.path.isfile(source) and not os.path.isdir(source):
+            error = f"Test Suite is not a file {source}"
+        else:
+            success = True
+        if not success:
+            connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage("Execution Error", error)))
+        return success
 
     def _try_init_db(self, connection):
         success = False
