@@ -275,10 +275,17 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         return test_suite
 
     def _populate_id_data(self, id_config):
-        self.id_config = IdentifierListSchema().loads(id_config)
-        import importlib
-        module = importlib.import_module(self.id_config.module)
-        filter_class = getattr(module, self.id_config.implementation)
-        self.input_filter = filter_class(self.id_config, self._id_data)
+        try:
+            if os.path.isfile(id_config):
+                with open(id_config) as f:
+                    id_config = f.read()
+            self.id_config = IdentifierListSchema().loads(id_config)
+            import importlib
+            module = importlib.import_module(self.id_config.module)
+            filter_class = getattr(module, self.id_config.implementation)
+            self.input_filter = filter_class(self.id_config, self._id_data)
+        except Exception as ex:
+            raise Exception("Failed to load identification data") from ex
+
 
     DEVICEKEY = 'devicekey'
