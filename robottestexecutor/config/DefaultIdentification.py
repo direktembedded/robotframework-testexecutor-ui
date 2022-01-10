@@ -32,7 +32,7 @@ class DefaultIdentification:
             for id in self._identifiers:
                 if id.possibles and not id_data.getValue(id.key):
                     id_data.setPossibleValues(id.key, id.possibles)
-                if not key and re.fullmatch(id.match, input):
+                if not key and id.match and re.fullmatch(id.match, input):
                     key = id.key
                 else:
                     if id_data.getValue(id.key) == "" and not id.optional:
