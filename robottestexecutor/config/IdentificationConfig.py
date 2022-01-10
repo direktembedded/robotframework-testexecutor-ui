@@ -19,7 +19,7 @@ from typing import List, Optional
 import marshmallow_dataclass
 import marshmallow.validate
 
-# TODO add a directory path so user can specify it be added to python module path
+# TODO add a directory path so user can specify it be added to python module path. Otherwise we need to set the current directory for the suites to be found.
 default_id_config = '''{
     "module": "robottestexecutor.config.DefaultIdentification",
     "implementation": "DefaultIdentification",

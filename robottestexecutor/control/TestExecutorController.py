@@ -130,8 +130,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                         self._allow_start(self.input_filter.instructions)
                 elif rc.op == IPCTypes.LOG_MESSAGE:
                     self.user_instructions(rc.data.title, rc.data.message, expectResponse=False)
-                    #print("\nTEC log_message", rc.data.title, rc.data.message, "END\n")
-                #print(rc)
 
         if self._terminateProcess(child_process):
             if active_test:
@@ -270,8 +268,6 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         return variables
 
     def _get_test_path(self):
-        #TODO should we always load the module, so any changes made are 'live' and do not need a re-start of the
-        # application?
         test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data)
         if test_suite and test_suite.startswith(".") and self.testpath:
             test_suite = os.path.join(self.testpath, test_suite)
