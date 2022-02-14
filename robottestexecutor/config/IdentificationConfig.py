@@ -46,7 +46,11 @@ default_id_config = '''{
                 {
                     "id": "model",
                     "match": "ModelA.*",
-                    "suite": "ModelA-Suite.robot"
+                    "suite": "ModelA-Suite.robot",
+                    "instruction": {
+                        text: "Press Start to begin testing ModelA"
+                        url: "./instructions/ModelA-Suite.html"
+                    }
                 },
                 {
                     "id": "model",
@@ -74,9 +78,16 @@ class Identifier:
 
 
 @dataclass
+class Instruction:
+    text: Optional[str]
+    url: Optional[str]
+
+
+@dataclass
 class SuiteSelector:
     id: str = field()
     match: str = field()
+    instruction: Optional[Instruction]
     suite: Optional[str]
 
 

@@ -21,6 +21,7 @@ from testexecutor.model.KeyValueModel import KeyValue
 class DefaultIdentification:
     def __init__(self, id_config, id_data):
         self._identifiers = id_config.identifiers
+        self._id_confing = id_config
         for id in self._identifiers:
             id_data.add(id.key, KeyValue(id.name, ""), id.possibles)
 
@@ -38,9 +39,6 @@ class DefaultIdentification:
                     if id_data.getValue(id.key) == "" and not id.optional:
                         ready = False
 
-        if ready:
-            self.instructions = "Press Start to begin testing"
-
         return key, ready
 
     def get_suite(self, suites_config, id_data):
@@ -57,5 +55,40 @@ class DefaultIdentification:
                     break
 
         return suite
+
+    def get_instructions(self, id_data, rel_path):
+        instruction = None
+        suites_config = self._id_confing.suites
+        if suites_config:
+            for choice in suites_config.selector:
+                for _id in self._identifiers:
+                    if _id.key == choice.id:
+                        value = id_data.getValue(_id.key)
+                        if re.fullmatch(choice.match, value):
+                            if choice.instruction:
+                                if choice.instruction.url:
+                                    instruction = self.get_instruction_from_url(choice.instruction.url, rel_path)
+                                else:
+                                    instruction = choice.instruction.text
+                            else:
+                                instruction = "No instruction found"
+                            break
+                if instruction:
+                    break
+
+        if not instruction:
+            instruction = "Press Start to Begin Testing"
+
+        return instruction
+
+    def get_instruction_from_url(self, url , rel_path):
+        # Initially support only file read
+        file_path = url
+        instruction = ""
+        if url.startswith(".") and rel_path:
+            file_path = os.path.join(url)
+        with open(file_path, 'r') as file:
+            instruction = file.read()
+        return instruction
 
     instructions = None

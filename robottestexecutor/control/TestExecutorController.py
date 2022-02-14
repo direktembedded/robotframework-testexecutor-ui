@@ -159,7 +159,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 self._id_data.setValue(key, input)
             if ready:
                 self.suitestate = TestSuiteModel.STATE_READY
-                self._allow_start(self.input_filter.instructions)
+                self._allow_start(self.input_filter.get_instructions(self._id_data, self.testpath))
 
     def _allow_start(self, instructions="Press start to start test"):
         self.async_instructions(self._id_data.getValue(self.DEVICEKEY), instructions, callback=self._start_suite, control=["Start"])
