@@ -89,6 +89,9 @@ class TestExecutorDialogs:
     def log_to_test(self):
         BuiltIn().set_suite_variable("${logdestination}", "test")
 
+    def log_to_none(self):
+        BuiltIn().set_suite_variable("${logdestination}", "none")
+
     def user_repeat_on_fail(self, keyword, *args):
         count = int(BuiltIn().get_variable_value("${user_repeat_on_fail_count}", default=100))
         exit_on_fail = bool(BuiltIn().get_variable_value("${user_repeat_on_fail_exit}", default=True))

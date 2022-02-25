@@ -63,6 +63,8 @@ class TestExecutorListener():
                     self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(ctest, msg.message)))
                 elif logdestination == "suite":
                     self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(ctest, msg.message)))
+                elif logdestination == "none":
+                    pass
             elif csuite:
                 self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(csuite, msg.message)))
 
