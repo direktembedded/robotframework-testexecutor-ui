@@ -93,6 +93,7 @@ class SuiteSelector:
 
 @dataclass
 class SuiteInfo:
+    # path is relative to the testpath used by the controller
     path: str = field(default=".")
     selector: List[SuiteSelector] = field(default_factory=list)
 

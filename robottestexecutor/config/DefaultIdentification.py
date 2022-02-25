@@ -81,12 +81,12 @@ class DefaultIdentification:
 
         return instruction
 
-    def get_instruction_from_url(self, url , rel_path):
+    def get_instruction_from_url(self, url, rel_path):
         # Initially support only file read
         file_path = url
         instruction = ""
         if url.startswith(".") and rel_path:
-            file_path = os.path.join(url)
+            file_path = os.path.join(rel_path, url)
         with open(file_path, 'r') as file:
             instruction = file.read()
         return instruction
