@@ -169,6 +169,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
         self.results.clear()
         self.start()
+        return True
 
     def _stop_suite(self):
         self.running = False
