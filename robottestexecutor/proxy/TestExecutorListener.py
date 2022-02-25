@@ -45,7 +45,13 @@ class TestExecutorListener():
         self.connection.send(TestExecutorIPC(IPCTypes.END_SUITE, name.name))
 
     def log_message(self, msg):
-        if TestExecutorIPC.__name__ not in msg.message:
+        block = [TestExecutorIPC.__name__, 'logdestination']
+        skip = False
+        for item in block:
+            if item in msg.message:
+                skip = True
+                break
+        if not skip:
             ctest = BuiltIn().get_variable_value("${TEST NAME}")
             csuite = BuiltIn().get_variable_value("${SUITE NAME}")
             logdestination = BuiltIn().get_variable_value("${logdestination}")
