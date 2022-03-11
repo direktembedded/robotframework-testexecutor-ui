@@ -166,6 +166,7 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self.suitestate = TestSuiteModel.STATE_RESTART
 
     def _start_suite(self, response=None):
+        self.clear_instructions()
         self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
         self.results.clear()
         self.start()
