@@ -48,19 +48,24 @@ default_id_config = '''{
                     "match": "ModelA.*",
                     "suite": "ModelA-Suite.robot",
                     "instruction": {
-                        text: "Press Start to begin testing ModelA"
-                        url: "./instructions/ModelA-Suite.html"
+                        "text": "Press Start to begin testing ModelA"
                     }
                 },
                 {
                     "id": "model",
                     "match": "ModelB",
-                    "suite": "ModelB-Suite.robot"
+                    "suite": "ModelB-Suite.robot",
+                    "instruction": {
+                        "text": "Press Start to begin testing ModelB"
+                    }
                 },
                 {
                     "id": "model",
                     "match": "ModelC.*",
-                    "suite": "ModelC-Suite.robot"
+                    "suite": "ModelC-Suite.robot",
+                    "instruction": {
+                        "text": "Press Start to begin testing ModelB"
+                    }
                 }
             ]
         }
