@@ -152,14 +152,22 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
 
     def _input_filter(self, input):
-        inputs = input.split('\n')
-        for input in inputs:
-            key, ready = self.input_filter.filter(input, self._id_data)
-            if key:
-                self._id_data.setValue(key, input)
-            if ready:
-                self.suitestate = TestSuiteModel.STATE_READY
-                self._allow_start(self.input_filter.get_instructions(self._id_data, self.testpath))
+        try:
+            inputs = input.split('\n')
+            for input in inputs:
+                key, ready = self.input_filter.filter(input, self._id_data)
+                if key:
+                    self._id_data.setValue(key, input)
+                if ready:
+                    self.suitestate = TestSuiteModel.STATE_READY
+                    self._allow_start(self.input_filter.get_instructions(self._id_data, self.testpath))
+        except FileNotFoundError as f_err:
+            self.async_instructions("File Not Found", str(f_err), callback=self._error_accepted, control=["Ok"])
+        except Exception as err:
+            self.async_instructions("Error", str(err), callback=self._error_accepted, control=["Ok"])
+
+    def _error_accepted(self, response):
+        self.clear_instructions()
 
     def _allow_start(self, instructions="Press start to start test"):
         self.async_instructions(self._id_data.getValue(self.DEVICEKEY), instructions, callback=self._start_suite, control=["Start"])
