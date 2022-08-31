@@ -18,7 +18,7 @@ from robot import run
 from robottestexecutor.proxy.TestExecutorListener import TestExecutorListener
 from robottestexecutor.proxy.TestExecutorLogger import TestExecutorLogger
 from robottestexecutor.proxy.TestExecutorIPC import IPCCommands, TestExecutionInfo, IPCMessage, IPCTypes, \
-    TestExecutorIPC
+    TestExecutorIPC, IPCCommand
 from test_archiver.ArchiverRobotListener import ArchiverRobotListener
 
 
@@ -37,7 +37,7 @@ class RobotProcessController(Process):
         while self.running:
             if connection.poll(1):
                 rc = connection.recv()
-                if rc.op == IPCCommands.EXECUTE_SUITE:
+                if isinstance(rc, IPCCommand) and rc.op == IPCCommands.EXECUTE_SUITE:
                     source = []
                     suites = []
                     tests = []
