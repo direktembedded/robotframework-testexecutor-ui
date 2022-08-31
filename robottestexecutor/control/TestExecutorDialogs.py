@@ -31,9 +31,9 @@ class TestExecutorDialogs:
         """
         te = BuiltIn().get_variable_value("${testexecutor}")
         te.userInstructions("", message, expectResponse=True)
-        print("exampletest", te.exampletest)
 
     def feedback(self, message):
         te = BuiltIn().get_variable_value("${testexecutor}")
         ctest = BuiltIn().get_variable_value("${TEST NAME}")
         te.feedback(ctest, message)
+
