@@ -130,6 +130,11 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                         self._allow_start(self.input_filter.instructions)
                 elif rc.op == IPCTypes.LOG_MESSAGE:
                     self.user_instructions(rc.data.title, rc.data.message, expectResponse=False)
+                elif rc.op == IPCTypes.GET_VALUE_FROM_USER:
+                    message = rc.data.message
+                    info = rc.data
+                    input, response = self.user_input(message.title, message.message, None, info.default, info.values)
+                    parent_conn.send((input, response))
 
         if self._terminateProcess(child_process):
             if active_test:
@@ -152,6 +157,9 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
 
     def _input_filter(self, input):
+        self._id_input_filter(input)
+
+    def _id_input_filter(self, input):
         try:
             inputs = input.split('\n')
             for input in inputs:

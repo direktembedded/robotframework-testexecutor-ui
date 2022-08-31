@@ -52,10 +52,23 @@ class IPCTypes:
     END_EXECUTION = "end_execution"
     LOG_MESSAGE = "log_message"
     EXECUTE_MANUAL_STEP = "execute_manual_step"
+    GET_VALUE_FROM_USER = "get_value_from_user"
+
+
+class IPCUserInteraction:
+    def __init__(self, message, default, *values):
+        self.default = default
+        self.values = values
+        self.message = message
+    values = None
+    message = None
+    default = None
 
 
 class IPCCommand:
-    def __init__(self, op, data={}):
+    def __init__(self, op, data=None):
+        if not data:
+            data = {}
         self.op = op
         self.data = data
     op = None
