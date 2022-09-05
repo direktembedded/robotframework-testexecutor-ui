@@ -74,9 +74,22 @@ default_id_config = '''{
 
 
 @dataclass
+class Field:
+    name: str = field()
+    value: Optional[str]
+
+
+@dataclass
+class Table:
+    name: str = field()
+    field: Field
+
+
+@dataclass
 class Identifier:
     key: str = field()
     name: str = field()
+    table: Optional[Table]
     match: Optional[str]
     possibles: List[str] = field(default_factory=list)
     optional: bool = field(default=False)
@@ -91,6 +104,7 @@ class Instruction:
 @dataclass
 class SuiteSelector:
     id: str = field()
+    table: Optional[Table]
     match: str = field()
     instruction: Optional[Instruction]
     suite: Optional[str]

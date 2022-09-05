@@ -28,6 +28,7 @@ from .TestExecutorListener import TestExecutorListener
 from ..proxy.TestExecutorIPC import IPCTypes, IPCCommand, IPCCommands, TestExecutionInfo
 from ..config.IdentificationConfig import IdentifierListSchema
 from ..config.IdentificationConfig import default_id_config
+from marshmallow.exceptions import ValidationError as MarshMallowValidationError
 
 
 TAGS = "Tags"
@@ -254,10 +255,15 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         if self.controller:
             return self._get_execution_info_from_controller()
         else:
+            table_records = {}
             info = {}
-            info[TestExecutionInfo.VARIABLES] = self._get_variables()
-            test_path = self._get_test_path()
+            test_path = self._get_test_path(table_records)
             info[TestExecutionInfo.SOURCE] = test_path
+            variables = self._get_identifier_variables(table_records)
+            if table_records:
+                for table, fields in table_records.items():
+                    variables.append(f"table#{table}:{fields}")
+            info[TestExecutionInfo.VARIABLES] = variables
             return info
 
     def _get_execution_info_from_controller(self):
@@ -270,23 +276,27 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         for item in rows:
             tests.append(item.name)
         info = {}
-        info[TestExecutionInfo.VARIABLES] = self._get_variables()
+        info[TestExecutionInfo.VARIABLES] = self._get_identifier_variables()
         info[TestExecutionInfo.TESTS] = tests
         info[TestExecutionInfo.SUITES] = self.selected_suitenames
         info[TestExecutionInfo.SOURCE] = self.testpath
         info[TestExecutionInfo.TAGS] = self.selected_tags
         return info
 
-    def _get_variables(self):
+    def _get_identifier_variables(self, table_records=None):
         variables = []
+        if not table_records:
+            # If caller does not want table records, create an internal dictionary which will be lost
+            table_records = {}
         ids = self._id_data.getValues()
         if ids:
             for item in ids.items():
                 variables.append("{0}:{1}".format(item[0], item[1]))
+                self.input_filter.get_identifier_table_fields(item[0], item[1], table_records)
         return variables
 
-    def _get_test_path(self):
-        test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data)
+    def _get_test_path(self, table_records):
+        test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data, table_records)
         if test_suite and test_suite.startswith(".") and self.testpath:
             test_suite = os.path.join(self.testpath, test_suite)
         return test_suite
@@ -301,6 +311,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             module = importlib.import_module(self.id_config.module)
             filter_class = getattr(module, self.id_config.implementation)
             self.input_filter = filter_class(self.id_config, self._id_data)
+        except MarshMallowValidationError as ex:
+            raise
         except Exception as ex:
             raise Exception("Failed to load identification data") from ex
 

@@ -41,7 +41,7 @@ class DefaultIdentification:
 
         return key, ready
 
-    def get_suite(self, suites_config, id_data):
+    def get_suite(self, suites_config, id_data, table_info=None):
         suite = None
         if suites_config:
             for choice in suites_config.selector:
@@ -50,6 +50,15 @@ class DefaultIdentification:
                         value = id_data.getValue(_id.key)
                         if re.fullmatch(choice.match, value):
                             suite = os.path.join(suites_config.path, choice.suite)
+                            if choice.table and isinstance(table_info, dict):
+                                value = choice.table.field.value
+                                if not value:
+                                    value = choice.suite
+                                table = choice.table.name
+                                field = {choice.table.field.name: value}
+                                if table not in table_info.keys():
+                                    table_info[table] = []
+                                table_info[table].append(field)
                             break
                 if suite:
                     break
@@ -90,5 +99,18 @@ class DefaultIdentification:
         with open(file_path, 'r') as file:
             instruction = file.read()
         return instruction
+
+    def get_identifier_table_fields(self, key, value, table_info=None):
+        if isinstance(table_info, dict):
+            for id in self._identifiers:
+                if id.table and id.key == key:
+                    if id.table.field.value:
+                        # If a static value is specified, use it instead of dynamic one incoming
+                        value = id.table.field.value
+                    table = id.table.name
+                    field = {id.table.field.name: value}
+                    if table not in table_info.keys():
+                        table_info[table] = []
+                    table_info[table].append(field)
 
     instructions = None
