@@ -15,6 +15,7 @@
 
 import threading
 import os
+import json
 from multiprocessing import Pipe
 from robot import run
 from robot.errors import DataError
@@ -262,7 +263,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             variables = self._get_identifier_variables(table_records)
             if table_records:
                 for table, fields in table_records.items():
-                    variables.append(f"table#{table}:{fields}")
+                    field_str = json.dumps(fields)
+                    variables.append(f'table#{table}:{field_str}')
             info[TestExecutionInfo.VARIABLES] = variables
             return info
 

@@ -55,10 +55,9 @@ class DefaultIdentification:
                                 if not value:
                                     value = choice.suite
                                 table = choice.table.name
-                                field = {choice.table.field.name: value}
                                 if table not in table_info.keys():
-                                    table_info[table] = []
-                                table_info[table].append(field)
+                                    table_info[table] = {}
+                                table_info[table][choice.table.field.name] = value
                             break
                 if suite:
                     break
@@ -108,9 +107,8 @@ class DefaultIdentification:
                         # If a static value is specified, use it instead of dynamic one incoming
                         value = id.table.field.value
                     table = id.table.name
-                    field = {id.table.field.name: value}
                     if table not in table_info.keys():
-                        table_info[table] = []
-                    table_info[table].append(field)
+                        table_info[table] = {}
+                    table_info[table][id.table.field.name] = value
 
     instructions = None
