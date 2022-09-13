@@ -106,9 +106,13 @@ class DefaultIdentification:
                     if id.table.field.value:
                         # If a static value is specified, use it instead of dynamic one incoming
                         value = id.table.field.value
-                    table = id.table.name
-                    if table not in table_info.keys():
-                        table_info[table] = {}
-                    table_info[table][id.table.field.name] = value
+                    if not value and id.optional:
+                        # if there is no value specified and this entry is optional leave it off the list
+                        pass
+                    else:
+                        table = id.table.name
+                        if table not in table_info.keys():
+                            table_info[table] = {}
+                        table_info[table][id.table.field.name] = value
 
     instructions = None
