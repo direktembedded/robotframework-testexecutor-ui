@@ -125,7 +125,8 @@ class TestExecutorDialogs:
 
     def user_repeat_on_fail(self, keyword, *args):
         count = int(BuiltIn().get_variable_value("${user_repeat_on_fail_count}", default=100))
-        exit_on_fail = bool(BuiltIn().get_variable_value("${user_repeat_on_fail_exit}", default=True))
+        fail_exit = BuiltIn().get_variable_value("${user_repeat_on_fail_exit}", default=True)
+        exit_on_fail = DataHelper.convert_to_bool(fail_exit)
         keyword_err = None
         for step in range(count):
             try:
@@ -155,6 +156,20 @@ class TestExecutorDialogs:
         return connection, ctest
 
 
+class DataHelper:
+    @staticmethod
+    def convert_to_bool(value):
+        if isinstance(value, bool):
+            bool_ed = value
+        elif isinstance(value, str):
+            bool_ed = DataHelper.str_to_bool(value)
+        else:
+            bool_ed = bool(value)
+        return bool_ed
+
+    @staticmethod
+    def str_to_bool(str):
+        return str.lower() in ['true', '1', 't', 'y', 'yes']
 
 
 def _validate_user_input(value):
