@@ -56,13 +56,15 @@ class IPCTypes:
 
 
 class IPCUserInteraction:
-    def __init__(self, message, default, *values):
+    def __init__(self, message, default, hidden, *values):
         self.default = default
         self.values = values
         self.message = message
+        self.hidden = hidden
     values = None
     message = None
     default = None
+    hidden = False
 
 
 class IPCCommand:

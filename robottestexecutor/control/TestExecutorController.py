@@ -135,7 +135,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
                 elif rc.op == IPCTypes.GET_VALUE_FROM_USER:
                     message = rc.data.message
                     info = rc.data
-                    input, response = self.user_input(message.title, message.message, None, info.default, info.values)
+                    input, response = self.user_input(message.title, message.message, None, info.default,
+                                                      info.hidden, info.values)
                     parent_conn.send((input, response))
 
         if self._terminateProcess(child_process):

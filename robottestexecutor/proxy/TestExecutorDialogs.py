@@ -100,7 +100,7 @@ class TestExecutorDialogs:
         """
         connection, ctest = self._executor_info()
         msg = IPCMessage(ctest, message)
-        command = IPCUserInteraction(msg, default_value)
+        command = IPCUserInteraction(msg, default_value, hidden)
         connection.send(TestExecutorIPC(IPCTypes.GET_VALUE_FROM_USER, command))
         # how to handle cancel
         response = connection.recv()
