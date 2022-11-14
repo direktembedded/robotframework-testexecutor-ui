@@ -16,6 +16,7 @@
 import threading
 import os
 import json
+import copy
 from multiprocessing import Pipe
 from robot import run
 from robot.errors import DataError
@@ -45,7 +46,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
 
     INSTANCE = 0
 
-    def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, useselector=False, testpath=None):
+    def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, useselector=False, testpath=None,
+                 instance_table_records=None):
         if not id_config:
             id_config = default_id_config
 
@@ -54,6 +56,9 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
         self.id_config = None
         self._populate_id_data(id_config)
         self.testpath = testpath
+        self.instance_table_records = None
+        if instance_table_records:
+            self.instance_table_records = instance_table_records
 
         self._results = ResultModel()
         self._runner = None
@@ -258,6 +263,8 @@ class TestExecutorController(TestSuiteModel, TestExecutorListener):
             return self._get_execution_info_from_controller()
         else:
             table_records = {}
+            if self.instance_table_records:
+                table_records = copy.deepcopy(self.instance_table_records)
             info = {}
             test_path = self._get_test_path(table_records)
             info[TestExecutionInfo.SOURCE] = test_path
