@@ -108,8 +108,8 @@ class RobotProcessController(Process):
             connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage(fe.strerror, fe.filename)))
         except Exception as ex:
             from sys import exc_info
-            # TODO, this is not caught at higher level, so although system error shows briefly it is "lost" and not noticed
             connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage("SYSTEM ERROR", str(exc_info()))))
+            raise ex  # re-raise the exception so suite does not start
         return success
 
     def _get_variables(self, dict):
