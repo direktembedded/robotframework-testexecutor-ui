@@ -42,7 +42,7 @@ def parse(*tests, **options):
     return TestSuiteFactory(*tests, **options)
 
 
-class TestExecutorController(TestSuiteModel, TestExecutorListener):
+class TestExecutorController(TestExecutorListener, TestSuiteModel):
 
     INSTANCE = 0
 
