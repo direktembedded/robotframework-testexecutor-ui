@@ -75,8 +75,6 @@ class RobotProcessController(Process):
             console="none",
             loglevel="INFO",
             metadata=metadata,
-            xoutputtimeinfo=True,
-            formattimestamp="iso8601utc",
             # TODO do we want to allow dated output files with some ID formatting?
             output="NONE",
             report="NONE",
