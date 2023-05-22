@@ -1,6 +1,6 @@
 # Robot Framework wrapper for Test Executor&trade;
 
-This module provides is a library which provides a test runner using [Robot Framework](https://robotframework.org/) and controller using Test Executor&trade;. [TestArchiver](https://github.com/salabs/TestArchiver) ArchiverRobotListener can be used to archive the test results.
+This module is a library which provides a test runner using [Robot Framework](https://robotframework.org/) and controller using Test Executor&trade;. [TestArchiver](https://github.com/salabs/TestArchiver) ArchiverRobotListener can be used to archive the test results.
 
 [Test Executor&trade;](https://direktembedded.com) is a generic python UI library for the execution, monitoring and control of python based tests on a device/system.
 

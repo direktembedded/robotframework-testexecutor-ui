@@ -5,7 +5,7 @@ venv
 
 build/*
 dist/*
-robot-testexecutor.egg-info/*
+robottestexecutor.egg-info/*
 
 log.html
 report.html
