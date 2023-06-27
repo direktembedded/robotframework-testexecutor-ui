@@ -151,10 +151,13 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self._runner = None
 
     def _terminateProcess(self, p):
-        wasalive = p.is_alive()
+        is_alive = wasalive = p.is_alive()
         if wasalive:
-            p.terminate()
-            p.join()
+            count = 3
+            while is_alive and count > 0:
+                p.terminate()
+                is_alive = p.is_alive()
+                count = count - 1
         return wasalive
 
     def _selectionFilterChanged(self, name, selected):
