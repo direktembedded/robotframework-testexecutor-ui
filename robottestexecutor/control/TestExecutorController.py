@@ -47,10 +47,11 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
     INSTANCE = 0
 
     def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, useselector=False, testpath=None,
-                 instance_table_records=None):
+                 instance_table_records=None, id_monitor=None):
         if not id_config:
             id_config = default_id_config
 
+        self.id_monitor = None
         self._db_config_file = db_config_file
         self._id_data = KeyValueModel()
         self.id_config = None
@@ -79,8 +80,14 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 tags, suitenames = self._set_controller_data(self.controller)
             self.controller.filters.updateData(TAGS, tags)
             self.controller.filters.updateData(SUITES, suitenames)
+        if id_monitor:
+            self.id_monitor = id_monitor
+            self.id_monitor.start(input_callback=self._input_filter)
 
     def start(self):
+        if self.id_monitor:
+            # If we are starting a suite, then no longer monitor the ID input
+            self.id_monitor.stop()
         if not self._runner:
             self._process_run()
         else:
@@ -88,6 +95,8 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
 
     def close(self):
         self.running = False
+        if self.id_monitor:
+            self.id_monitor.stop()
 
     def _process_run(self):
         try:
@@ -168,9 +177,10 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
 
     def _input_filter(self, input):
-        self._id_input_filter(input)
+        return self._id_input_filter(input)
 
     def _id_input_filter(self, input):
+        ready = False
         try:
             inputs = input.split('\n')
             for input in inputs:
@@ -178,12 +188,17 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 if key:
                     self._id_data.setValue(key, input)
                 if ready:
-                    self.suitestate = TestSuiteModel.STATE_READY
-                    self._allow_start(self.input_filter.get_instructions(self._id_data, self.testpath))
+                    if self._awaiting_start():
+                        # Id Monitor can start the suite by sending through 'start' as input once id data is ready
+                        self._start_suite(input)
+                    else:
+                        self.suitestate = TestSuiteModel.STATE_READY
+                        self._allow_start(self.input_filter.get_instructions(self._id_data, self.testpath))
         except FileNotFoundError as f_err:
             self.async_instructions("File Not Found", str(f_err), callback=self._error_accepted, control=["Ok"])
         except Exception as err:
             self.async_instructions("Error", str(err), callback=self._error_accepted, control=["Ok"])
+        return ready
 
     def _error_accepted(self, response):
         self.clear_instructions()
@@ -192,12 +207,18 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self.async_instructions(self._id_data.getValue(self.DEVICEKEY), instructions, callback=self._start_suite, control=["Start"])
         self.suitestate = TestSuiteModel.STATE_RESTART
 
+    def _awaiting_start(self):
+        return self.suitestate == TestSuiteModel.STATE_RESTART
+
     def _start_suite(self, response=None):
-        self.clear_instructions()
-        self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
-        self.results.clear()
-        self.start()
-        return True
+        started = False
+        if response == 'start':  # Matches button text, all lower case
+            self.clear_instructions()
+            self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
+            self.results.clear()
+            self.start()
+            started = True
+        return started
 
     def _stop_suite(self):
         self.running = False
@@ -212,6 +233,10 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 self._stop_suite()
         else:
             newstate = st
+            completedStates = [TestSuiteModel.STATE_IDLE, TestSuiteModel.STATE_END]
+            if newstate in completedStates:
+                if self.id_monitor:
+                    self.id_monitor.start(input_callback=self._input_filter)
         return newstate
 
     def _set_controller_data(self, controller, include_tags=[], suitenamesin=[]):
