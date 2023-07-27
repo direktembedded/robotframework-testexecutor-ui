@@ -52,6 +52,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         if not id_config:
             id_config = default_id_config
 
+        self._exited = False
         self.id_monitor = None
         self._db_config_file = db_config_file
         self._id_data = KeyValueModel()
@@ -85,10 +86,11 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self.postInputSignal.connect(self._post_input, Qt.QueuedConnection)
         self.postReadyToMonitor.connect(self._post_ready_to_monitor, Qt.QueuedConnection)
         self.postEndToMonitor.connect(self._post_end_to_monitor, Qt.QueuedConnection)
+        self._awaiting_start = False
         if id_monitor:
             self.id_monitor = id_monitor
-            self.id_monitor.start(input_callback=self._id_monitor_input)
-        self._awaiting_start = False
+            self._start_monitor()
+
 
     def start(self):
         if self.id_monitor:
@@ -99,6 +101,10 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             self.startProcessSignal.emit()
         else:
             self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
+
+    def exit(self):
+        self._exited = True
+        self.close()
 
     def close(self):
         self.running = False
@@ -170,7 +176,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
     def _terminateProcess(self, p):
         is_alive = wasalive = p.is_alive()
         if wasalive:
-            count = 3
+            count = 1  # Increase to force exit on RF, but teardown will not happen
             while is_alive and count > 0:
                 p.terminate()
                 is_alive = p.is_alive()
@@ -264,14 +270,18 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 self._stop_suite()
         else:
             newstate = st
-            completedStates = [TestSuiteModel.STATE_IDLE, TestSuiteModel.STATE_END]
-            if newstate in completedStates:
-                if self.id_monitor:
-                    self.id_monitor.start(input_callback=self._input_filter)
-            elif newstate == TestSuiteModel.STATE_READY:
-                if self.id_monitor:
-                    self.postReadyToMonitor.emit()
+            completedStates = [TestSuiteModel.STATE_IDLE, TestSuiteModel.STATE_END, TestSuiteModel.STATE_STOPPED]
+            if newstate != self.suitestate:
+                if newstate in completedStates:
+                    self._start_monitor()
+                elif newstate == TestSuiteModel.STATE_READY:
+                    if self.id_monitor:
+                        self.postReadyToMonitor.emit()
         return newstate
+
+    def _start_monitor(self):
+        if self.id_monitor and not self._exited:
+            self.id_monitor.start(input_callback=self._input_filter)
 
     def _set_controller_data(self, controller, include_tags=[], suitenamesin=[]):
         """
