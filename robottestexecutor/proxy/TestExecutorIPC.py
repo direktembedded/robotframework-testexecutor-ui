@@ -91,6 +91,7 @@ class IPCCommands:
     def __init__(self):
         pass
     EXECUTE_SUITE = "execute_suite"
+    TERMINATE = "terminate"
 
 
 class TestExecutionInfo:

@@ -52,6 +52,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         if not id_config:
             id_config = default_id_config
 
+        self.parent_conn = None
         self._exited = False
         self.id_monitor = None
         self._db_config_file = db_config_file
@@ -91,18 +92,19 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             self.id_monitor = id_monitor
             self._start_monitor()
 
-
     def start(self):
         if self.id_monitor:
             # If we are starting a suite, then no longer monitor the ID input
             self.id_monitor.stop()
         if not self._runner:
-            # Always start process on the main thread
+            # Always start process from the main thread
             self.startProcessSignal.emit()
         else:
             self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
 
     def exit(self):
+        if self.parent_conn:
+            self.parent_conn.send(IPCCommand(IPCCommands.TERMINATE))
         self._exited = True
         self.close()
 
@@ -173,10 +175,9 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             self.suitestate = TestSuiteModel.STATE_STOPPED
         self._runner = None
 
-    def _terminateProcess(self, p):
+    def _terminateProcess(self, p, count=1):
         is_alive = wasalive = p.is_alive()
         if wasalive:
-            count = 1  # Increase to force exit on RF, but teardown will not happen
             while is_alive and count > 0:
                 p.terminate()
                 is_alive = p.is_alive()

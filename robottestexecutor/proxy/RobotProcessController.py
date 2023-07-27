@@ -37,26 +37,29 @@ class RobotProcessController(Process):
         while self.running:
             if connection.poll(1):
                 rc = connection.recv()
-                if isinstance(rc, IPCCommand) and rc.op == IPCCommands.EXECUTE_SUITE:
-                    source = []
-                    suites = []
-                    tests = []
-                    includes = []
-                    variables = []
-                    start = False
-                    if TestExecutionInfo.SOURCE in rc.data:
-                        source = rc.data[TestExecutionInfo.SOURCE]
-                        start = self._try_find_source(connection, source)
-                    if TestExecutionInfo.SUITES in rc.data:
-                        suites = rc.data[TestExecutionInfo.SUITES]
-                    if TestExecutionInfo.TESTS in rc.data:
-                        tests = rc.data[TestExecutionInfo.TESTS]
-                    if TestExecutionInfo.TAGS in rc.data:
-                        includes = rc.data[TestExecutionInfo.TAGS]
-                    if TestExecutionInfo.VARIABLES in rc.data:
-                        variables =rc.data[TestExecutionInfo.VARIABLES]
-                    if start:
-                        self._process(connection, source, suites, tests, includes, variables)
+                if isinstance(rc, IPCCommand):
+                    if rc.op == IPCCommands.EXECUTE_SUITE:
+                        source = []
+                        suites = []
+                        tests = []
+                        includes = []
+                        variables = []
+                        start = False
+                        if TestExecutionInfo.SOURCE in rc.data:
+                            source = rc.data[TestExecutionInfo.SOURCE]
+                            start = self._try_find_source(connection, source)
+                        if TestExecutionInfo.SUITES in rc.data:
+                            suites = rc.data[TestExecutionInfo.SUITES]
+                        if TestExecutionInfo.TESTS in rc.data:
+                            tests = rc.data[TestExecutionInfo.TESTS]
+                        if TestExecutionInfo.TAGS in rc.data:
+                            includes = rc.data[TestExecutionInfo.TAGS]
+                        if TestExecutionInfo.VARIABLES in rc.data:
+                            variables =rc.data[TestExecutionInfo.VARIABLES]
+                        if start:
+                            self._process(connection, source, suites, tests, includes, variables)
+                    elif rc.op == IPCCommands.TERMINATE:
+                        self.running = False
 
     def _process(self, connection, source, suites, tests, includes, variables):
         self._try_init_db(connection)
