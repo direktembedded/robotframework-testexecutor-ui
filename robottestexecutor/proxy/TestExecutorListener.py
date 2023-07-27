@@ -14,7 +14,7 @@
 #  limitations under the License.
 
 from robot.libraries.BuiltIn import BuiltIn
-from robottestexecutor.proxy.TestExecutorIPC import TestExecutorIPC, IPCTest, IPCMessage, IPCTypes
+from robottestexecutor.proxy.TestExecutorIPC import TestExecutorIPC, IPCTest, IPCMessage, IPCTypes, IPCSuite
 
 
 class TestExecutorListener():
@@ -42,7 +42,8 @@ class TestExecutorListener():
 
     def end_suite(self, name, result):
         #print("\nTestExecutorIPCListener.end_suite", name, result.endtime)
-        self.connection.send(TestExecutorIPC(IPCTypes.END_SUITE, name.name))
+        data = IPCSuite(name.name, result.passed, result.statistics)
+        self.connection.send(TestExecutorIPC(IPCTypes.END_SUITE, data))
 
     def log_message(self, msg):
         block = [TestExecutorIPC.__name__, 'logdestination']

@@ -32,6 +32,16 @@ class IPCMessage:
     message = None
 
 
+class IPCSuite:
+    def __init__(self, test, result=None, statistics=None):
+        self.name = test
+        self.result = result
+        self.statistics = statistics
+    name = None
+    result = None
+    statistics = None
+
+
 class TestExecutorIPC:
     def __init__(self, op, data=None):
         self.op = op

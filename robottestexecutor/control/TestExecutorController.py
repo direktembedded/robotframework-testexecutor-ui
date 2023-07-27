@@ -31,6 +31,7 @@ from ..proxy.TestExecutorIPC import IPCTypes, IPCCommand, IPCCommands, TestExecu
 from ..config.IdentificationConfig import IdentifierListSchema
 from ..config.IdentificationConfig import default_id_config
 from marshmallow.exceptions import ValidationError as MarshMallowValidationError
+from PySide6.QtCore import Signal, Qt
 
 
 TAGS = "Tags"
@@ -80,16 +81,22 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 tags, suitenames = self._set_controller_data(self.controller)
             self.controller.filters.updateData(TAGS, tags)
             self.controller.filters.updateData(SUITES, suitenames)
+        self.startProcessSignal.connect(self._process_run, Qt.QueuedConnection)
+        self.postInputSignal.connect(self._post_input, Qt.QueuedConnection)
+        self.postReadyToMonitor.connect(self._post_ready_to_monitor, Qt.QueuedConnection)
+        self.postEndToMonitor.connect(self._post_end_to_monitor, Qt.QueuedConnection)
         if id_monitor:
             self.id_monitor = id_monitor
-            self.id_monitor.start(input_callback=self._input_filter)
+            self.id_monitor.start(input_callback=self._id_monitor_input)
+        self._awaiting_start = False
 
     def start(self):
         if self.id_monitor:
             # If we are starting a suite, then no longer monitor the ID input
             self.id_monitor.stop()
         if not self._runner:
-            self._process_run()
+            # Always start process on the main thread
+            self.startProcessSignal.emit()
         else:
             self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
 
@@ -131,7 +138,8 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 elif rc.op == IPCTypes.START_SUITE:
                     self.suite_start(rc.data)
                 elif rc.op == IPCTypes.END_SUITE:
-                    self.suite_end(rc.data)
+                    self.suite_end(rc.data.name, failures=rc.data.statistics.failed, message=rc.data.statistics.message)
+                    self.postEndToMonitor.emit(rc.data.result)
                 elif rc.op == IPCTypes.START_TEST:
                     active_test = rc.data.name
                     self.test_started(rc.data.name)
@@ -179,19 +187,43 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
     def _input_filter(self, input):
         return self._id_input_filter(input)
 
+    def _post_input(self, input):
+        """
+        Set the model's newid value in case it has some processsing, this
+        will in turn call _id_input_filter
+        """
+        self.newid = input
+
+    def _post_ready_to_monitor(self):
+        if self.id_monitor:
+            self.id_monitor.ready()
+
+    def _post_end_to_monitor(self, result):
+        if self.id_monitor:
+            self.id_monitor.end_suite(result)
+
+    def _id_monitor_input(self, input):
+        """
+        Relay via queued signal to ensure synchronous communications with monitor
+        """
+        self.postInputSignal.emit(input)
+
     def _id_input_filter(self, input):
         ready = False
         try:
             inputs = input.split('\n')
             for input in inputs:
+                if input.lower() == TestSuiteModel.ACTION_CLEAR.lower():
+                    self.clear()
+                    continue
                 key, ready = self.input_filter.filter(input, self._id_data)
                 if key:
                     self._id_data.setValue(key, input)
                 if ready:
-                    if self._awaiting_start():
+                    if self._awaiting_start and input.lower() == 'start':
                         # Id Monitor can start the suite by sending through 'start' as input once id data is ready
                         self._start_suite(input)
-                    else:
+                    elif not self._awaiting_start:
                         self.suitestate = TestSuiteModel.STATE_READY
                         self._allow_start(self.input_filter.get_instructions(self._id_data, self.testpath))
         except FileNotFoundError as f_err:
@@ -204,15 +236,14 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self.clear_instructions()
 
     def _allow_start(self, instructions="Press start to start test"):
+        self._awaiting_start = True
         self.async_instructions(self._id_data.getValue(self.DEVICEKEY), instructions, callback=self._start_suite, control=["Start"])
         self.suitestate = TestSuiteModel.STATE_RESTART
-
-    def _awaiting_start(self):
-        return self.suitestate == TestSuiteModel.STATE_RESTART
 
     def _start_suite(self, response=None):
         started = False
         if response == 'start':  # Matches button text, all lower case
+            self._awaiting_start = False
             self.clear_instructions()
             self.clear_results_on_start = False  # We may have multiple suites in a single run, so keep test results
             self.results.clear()
@@ -237,6 +268,9 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             if newstate in completedStates:
                 if self.id_monitor:
                     self.id_monitor.start(input_callback=self._input_filter)
+            elif newstate == TestSuiteModel.STATE_READY:
+                if self.id_monitor:
+                    self.postReadyToMonitor.emit()
         return newstate
 
     def _set_controller_data(self, controller, include_tags=[], suitenamesin=[]):
@@ -356,3 +390,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
 
 
     DEVICEKEY = 'devicekey'
+    startProcessSignal = Signal()
+    postInputSignal = Signal(str)
+    postReadyToMonitor = Signal()
+    postEndToMonitor = Signal(bool)
