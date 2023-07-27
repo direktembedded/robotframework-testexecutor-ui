@@ -102,13 +102,10 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         else:
             self.parent_conn.send(IPCCommand(IPCCommands.EXECUTE_SUITE, self._get_execution_info()))
 
-    def exit(self):
+    def close(self):
         if self.parent_conn:
             self.parent_conn.send(IPCCommand(IPCCommands.TERMINATE))
         self._exited = True
-        self.close()
-
-    def close(self):
         self.running = False
         if self.id_monitor:
             self.id_monitor.stop()
