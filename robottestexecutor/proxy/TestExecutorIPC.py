@@ -102,4 +102,5 @@ class TestExecutionInfo:
     TAGS = "Tags"
     TESTS = "Tests"
     VARIABLES = "Variables"
+    UNIQUE_IDS = "UniqueIds"
 

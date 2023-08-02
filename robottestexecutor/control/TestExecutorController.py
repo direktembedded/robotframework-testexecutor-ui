@@ -48,7 +48,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
     INSTANCE = 0
 
     def __init__(self, title="Robot Listener", id_config=None, db_config_file=None, useselector=False, testpath=None,
-                 instance_table_records=None, id_monitor=None):
+                 instance_table_records=None, id_monitor=None, output_folder=None, unique_ids=None):
         if not id_config:
             id_config = default_id_config
 
@@ -56,6 +56,10 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self._exited = False
         self.id_monitor = None
         self._db_config_file = db_config_file
+        self._output_folder = output_folder
+        self._unique_ids = unique_ids
+        if unique_ids is None:
+            self._unique_ids = []
         self._id_data = KeyValueModel()
         self.id_config = None
         self._populate_id_data(id_config)
@@ -113,7 +117,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
     def _process_run(self):
         try:
             self.parent_conn, child_conn = Pipe()
-            p = RobotProcessController(child_conn, self._db_config_file)
+            p = RobotProcessController(child_conn, self._db_config_file, self._output_folder)
             p.start()
             self._runner = threading.Thread(target=self._parent_run, args=(p,))
             self._runner.start()
@@ -329,51 +333,53 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         return tags, suitenames
 
     def _get_execution_info(self):
+        table_records = {}
+        if self.instance_table_records:
+            table_records = copy.deepcopy(self.instance_table_records)
+        variables, unique_ids = self._get_identifier_variables(table_records)
+        if table_records:
+            for table, fields in table_records.items():
+                field_str = json.dumps(fields)
+                variables.append(f'table#{table}:{field_str}')
+        info = {}
+        test_path = self._get_test_path(table_records)
+        info[TestExecutionInfo.SOURCE] = test_path
+        info[TestExecutionInfo.VARIABLES] = variables
+        info[TestExecutionInfo.UNIQUE_IDS] = unique_ids
         if self.controller:
-            return self._get_execution_info_from_controller()
-        else:
-            table_records = {}
-            if self.instance_table_records:
-                table_records = copy.deepcopy(self.instance_table_records)
-            info = {}
-            test_path = self._get_test_path(table_records)
-            info[TestExecutionInfo.SOURCE] = test_path
-            variables = self._get_identifier_variables(table_records)
-            if table_records:
-                for table, fields in table_records.items():
-                    field_str = json.dumps(fields)
-                    variables.append(f'table#{table}:{field_str}')
-            info[TestExecutionInfo.VARIABLES] = variables
-            return info
+            self._get_execution_info_from_controller(info)
+        return info
 
-    def _get_execution_info_from_controller(self):
-
+    def _get_execution_info_from_controller(self, info):
+        """
+        Add the controller variables and override the SOURCE
+        """
         tests = []
         rows = self.controller.selectedItems()
         # If any tests are selected then list them and only these will be executed. If none were selected then all
         # will be executed based on suites and tags selected. That is how robot framework executes tests.
-        # TODO loop through whole model and find .selected values.
         for item in rows:
             tests.append(item.name)
-        info = {}
-        info[TestExecutionInfo.VARIABLES] = self._get_identifier_variables()
         info[TestExecutionInfo.TESTS] = tests
         info[TestExecutionInfo.SUITES] = self.selected_suitenames
         info[TestExecutionInfo.SOURCE] = self.testpath
         info[TestExecutionInfo.TAGS] = self.selected_tags
-        return info
 
     def _get_identifier_variables(self, table_records=None):
         variables = []
+        unique_ids = []
         if not table_records:
             # If caller does not want table records, create an internal dictionary which will be lost
             table_records = {}
         ids = self._id_data.getValues()
         if ids:
             for item in ids.items():
+                key = item[0]
+                if key in self._unique_ids:
+                    unique_ids.append(item[1])
                 variables.append("{0}:{1}".format(item[0], item[1]))
                 self.input_filter.get_identifier_table_fields(item[0], item[1], table_records)
-        return variables
+        return variables, unique_ids
 
     def _get_test_path(self, table_records):
         test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data, table_records)
@@ -395,7 +401,6 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             raise
         except Exception as ex:
             raise Exception("Failed to load identification data") from ex
-
 
     DEVICEKEY = 'devicekey'
     startProcessSignal = Signal()

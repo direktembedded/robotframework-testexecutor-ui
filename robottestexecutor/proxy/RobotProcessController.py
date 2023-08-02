@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import os, sys
+from datetime import datetime, timezone
 from multiprocessing import Process
 from robot import run
 from robottestexecutor.proxy.TestExecutorListener import TestExecutorListener
@@ -24,11 +26,12 @@ from test_archiver.ArchiverRobotListener import ArchiverRobotListener
 
 class RobotProcessController(Process):
 
-    def __init__(self, connection, db_config_file):
+    def __init__(self, connection, db_config_file, output_folder=None):
         self.listener = TestExecutorListener(connection)
         self.logger = TestExecutorLogger(connection)
         self.db_listener = None
         self._db_config_file = db_config_file
+        self._output_folder = output_folder
         self.running = False
         Process.__init__(self, target=self.process, args=(connection,))
 
@@ -44,6 +47,7 @@ class RobotProcessController(Process):
                         tests = []
                         includes = []
                         variables = []
+                        unique_ids = []
                         start = False
                         if TestExecutionInfo.SOURCE in rc.data:
                             source = rc.data[TestExecutionInfo.SOURCE]
@@ -55,13 +59,17 @@ class RobotProcessController(Process):
                         if TestExecutionInfo.TAGS in rc.data:
                             includes = rc.data[TestExecutionInfo.TAGS]
                         if TestExecutionInfo.VARIABLES in rc.data:
-                            variables =rc.data[TestExecutionInfo.VARIABLES]
+                            variables = rc.data[TestExecutionInfo.VARIABLES]
+                        if TestExecutionInfo.VARIABLES in rc.data:
+                            variables = rc.data[TestExecutionInfo.VARIABLES]
+                        if TestExecutionInfo.UNIQUE_IDS in rc.data:
+                            unique_ids = rc.data[TestExecutionInfo.UNIQUE_IDS]
                         if start:
-                            self._process(connection, source, suites, tests, includes, variables)
+                            self._process(connection, source, suites, tests, includes, variables, unique_ids)
                     elif rc.op == IPCCommands.TERMINATE:
                         self.running = False
 
-    def _process(self, connection, source, suites, tests, includes, variables):
+    def _process(self, connection, source, suites, tests, includes, variables, unique_ids):
         self._try_init_db(connection)
         metadata = variables.copy()
         variables.append("CUSTOMDIALOGS:robottestexecutor.proxy.TestExecutorDialogs")
@@ -70,6 +78,15 @@ class RobotProcessController(Process):
         listeners = [self.listener]
         if self.db_listener:
             listeners.append(self.db_listener)
+        output = "NONE"
+        if self._output_folder is not None:
+            identifier = ""
+            if unique_ids:
+                identifier = '_'.join(unique_ids)
+                identifier = identifier + "_"
+            utc_str = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            output_file = f"{utc_str}_{identifier}output.xml"
+            output = os.path.join(self._output_folder, output_file)
         run(source, listener=listeners,
             suite=suites,
             test=tests,
@@ -78,8 +95,7 @@ class RobotProcessController(Process):
             console="none",
             loglevel="INFO",
             metadata=metadata,
-            # TODO do we want to allow dated output files with some ID formatting?
-            output="NONE",
+            output=output,
             report="NONE",
             log="NONE"
             )
