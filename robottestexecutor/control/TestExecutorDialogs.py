@@ -30,7 +30,7 @@ class TestExecutorDialogs:
         ``message`` is the message that will be given to the listener.
         """
         te = BuiltIn().get_variable_value("${testexecutor}")
-        te.userInstructions("", message, expectResponse=True)
+        te.user_instructions("", message, expectResponse=True)
 
     def feedback(self, message):
         te = BuiltIn().get_variable_value("${testexecutor}")

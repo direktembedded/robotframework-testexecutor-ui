@@ -111,6 +111,21 @@ class TestExecutorDialogs:
                 raise AssertionError("No response for step and no default value provided")
         return response
 
+    def user_choice(self, message):
+        """Pauses test execution until user returns choice.
+
+        User can press either ``Yes`` or ``No`` button, or provide text of control buttons
+
+        ``message`` is the instruction shown in the initial dialog and
+        ``control`` is an optional list of control buttons to show
+        """
+        connection, ctest = self._executor_info()
+        connection.send(TestExecutorIPC(IPCTypes.EXECUTE_MANUAL_STEP, IPCMessage(ctest, message)))
+        response = connection.recv()
+        if not _validate_user_input(response):
+            raise AssertionError("No response for step")
+        return response
+
     def log_to_suite(self):
         BuiltIn().set_suite_variable("${logdestination}", "suite")
 
