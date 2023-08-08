@@ -336,13 +336,13 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         table_records = {}
         if self.instance_table_records:
             table_records = copy.deepcopy(self.instance_table_records)
+        test_path = self._get_test_path(table_records)
         variables, unique_ids = self._get_identifier_variables(table_records)
         if table_records:
             for table, fields in table_records.items():
                 field_str = json.dumps(fields)
                 variables.append(f'table#{table}:{field_str}')
         info = {}
-        test_path = self._get_test_path(table_records)
         info[TestExecutionInfo.SOURCE] = test_path
         info[TestExecutionInfo.VARIABLES] = variables
         info[TestExecutionInfo.UNIQUE_IDS] = unique_ids
