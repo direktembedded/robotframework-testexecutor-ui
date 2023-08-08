@@ -60,8 +60,6 @@ class RobotProcessController(Process):
                             includes = rc.data[TestExecutionInfo.TAGS]
                         if TestExecutionInfo.VARIABLES in rc.data:
                             variables = rc.data[TestExecutionInfo.VARIABLES]
-                        if TestExecutionInfo.VARIABLES in rc.data:
-                            variables = rc.data[TestExecutionInfo.VARIABLES]
                         if TestExecutionInfo.UNIQUE_IDS in rc.data:
                             unique_ids = rc.data[TestExecutionInfo.UNIQUE_IDS]
                         if start:
