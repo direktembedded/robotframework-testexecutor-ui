@@ -275,6 +275,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             completedStates = [TestSuiteModel.STATE_IDLE, TestSuiteModel.STATE_END, TestSuiteModel.STATE_STOPPED]
             if newstate != self.suitestate:
                 if newstate in completedStates:
+                    self._awaiting_start = False
                     self._start_monitor()
                 elif newstate == TestSuiteModel.STATE_READY:
                     if self.id_monitor:
