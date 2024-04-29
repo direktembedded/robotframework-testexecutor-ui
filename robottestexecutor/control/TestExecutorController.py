@@ -63,6 +63,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self._id_data = KeyValueModel()
         self.id_config = None
         self._populate_id_data(id_config)
+        self.base_test_path = testpath
         self.testpath = testpath
         self.instance_table_records = None
         if instance_table_records:
@@ -81,12 +82,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self.selected_suitenames = []
         if useselector:
             self.controller = TestSuiteControlModel(filtercallback=self._selectionFilterChanged, filters=default_filters)
-            tags = []
-            suitenames = []
-            if self.testpath:
-                tags, suitenames = self._set_controller_data(self.controller)
-            self.controller.filters.updateData(TAGS, tags)
-            self.controller.filters.updateData(SUITES, suitenames)
+            self._update_selector(testpath)
         self.startProcessSignal.connect(self._process_run, Qt.QueuedConnection)
         self.postInputSignal.connect(self._post_input, Qt.QueuedConnection)
         self.postReadyToMonitor.connect(self._post_ready_to_monitor, Qt.QueuedConnection)
@@ -192,6 +188,15 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             self.selected_suitenames = selected.getItems()
         self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
 
+    def _update_selector(self, testpath):
+        tags = []
+        suitenames = []
+        if testpath:
+            tags, suitenames = self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames,
+                                                         test_path=testpath)
+        self.controller.filters.updateData(TAGS, tags)
+        self.controller.filters.updateData(SUITES, suitenames)
+
     def _input_filter(self, input):
         return self._id_input_filter(input)
 
@@ -233,7 +238,10 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                         self._start_suite(input)
                     elif not self._awaiting_start:
                         self.suitestate = TestSuiteModel.STATE_READY
-                        self._allow_start(self.input_filter.get_instructions(self._id_data, self.testpath))
+                        self._allow_start(self.input_filter.get_instructions(self._id_data, self.base_test_path))
+                        if self.controller:
+                            selector_test_path = self._get_test_path(None)
+                            self._update_selector(selector_test_path)
         except FileNotFoundError as f_err:
             self.async_instructions("File Not Found", str(f_err), callback=self._error_accepted, control=["Ok"])
         except Exception as err:
@@ -286,7 +294,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         if self.id_monitor and not self._exited:
             self.id_monitor.start(input_callback=self._input_filter)
 
-    def _set_controller_data(self, controller, include_tags=[], suitenamesin=[]):
+    def _set_controller_data(self, controller, include_tags=[], suitenamesin=[], test_path=None):
         """
 
         :param controller:
@@ -294,6 +302,8 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         :return:
         """
         suites = controller.testselector
+        if test_path:
+            self.testpath = test_path
         tests = self.testpath
         variables = ["dummyvar:true"]
 
@@ -312,6 +322,9 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 parent_suite = "."  # Use current directory symbol to indicate base suite
                 for test in suitestructure.tests:
                     suites.appendChild(test.name, test.doc, parent_suite)
+                    for tag in test.tags:
+                        if tag not in tags:
+                            tags.append(tag)
             else:
                 for suite in suitestructure.suites:
                     parent_suite = suite.name
@@ -384,8 +397,8 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
 
     def _get_test_path(self, table_records):
         test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data, table_records)
-        if test_suite and test_suite.startswith(".") and self.testpath:
-            test_suite = os.path.join(self.testpath, test_suite)
+        if test_suite and test_suite.startswith(".") and self.base_test_path:
+            test_suite = os.path.join(self.base_test_path, test_suite)
         return test_suite
 
     def _populate_id_data(self, id_config):
