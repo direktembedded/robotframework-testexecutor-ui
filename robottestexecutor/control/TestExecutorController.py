@@ -188,14 +188,18 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
             self.selected_suitenames = selected.getItems()
         self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
 
-    def _update_selector(self, testpath):
-        tags = []
-        suitenames = []
-        if testpath:
-            tags, suitenames = self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames,
-                                                         test_path=testpath)
-        self.controller.filters.updateData(TAGS, tags)
-        self.controller.filters.updateData(SUITES, suitenames)
+    def _update_selector(self, testpath=None):
+        if self.controller:
+            selector_test_path = self._get_test_path(testpath)
+            if selector_test_path:
+                tags = []
+                suitenames = []
+                if selector_test_path:
+                    tags, suitenames = self._set_controller_data(self.controller, self.selected_tags,
+                                                                 self.selected_suitenames,
+                                                                 test_path=selector_test_path)
+                self.controller.filters.updateData(TAGS, tags)
+                self.controller.filters.updateData(SUITES, suitenames)
 
     def _input_filter(self, input):
         return self._id_input_filter(input)
@@ -239,9 +243,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                     elif not self._awaiting_start:
                         self.suitestate = TestSuiteModel.STATE_READY
                         self._allow_start(self.input_filter.get_instructions(self._id_data, self.base_test_path))
-                        if self.controller:
-                            selector_test_path = self._get_test_path(None)
-                            self._update_selector(selector_test_path)
+            self._update_selector(self.base_test_path)
         except FileNotFoundError as f_err:
             self.async_instructions("File Not Found", str(f_err), callback=self._error_accepted, control=["Ok"])
         except Exception as err:
@@ -395,10 +397,12 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 self.input_filter.get_identifier_table_fields(item[0], item[1], table_records)
         return variables, unique_ids
 
-    def _get_test_path(self, table_records):
-        test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data, table_records)
+    def _get_test_path(self, test_path=None):
+        test_suite = self.input_filter.get_suite(self.id_config.suites, self._id_data)
         if test_suite and test_suite.startswith(".") and self.base_test_path:
             test_suite = os.path.join(self.base_test_path, test_suite)
+        else:
+            test_suite = test_path
         return test_suite
 
     def _populate_id_data(self, id_config):
