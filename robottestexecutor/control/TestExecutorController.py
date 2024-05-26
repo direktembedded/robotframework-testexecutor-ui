@@ -290,6 +290,8 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                 elif newstate == TestSuiteModel.STATE_READY:
                     if self.id_monitor:
                         self.postReadyToMonitor.emit()
+            if newstate in completedStates:
+                self._update_selector(self.base_test_path)
         return newstate
 
     def _start_monitor(self):
