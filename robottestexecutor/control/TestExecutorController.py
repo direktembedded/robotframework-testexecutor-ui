@@ -158,7 +158,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
                     if self.controller:
                         self._allow_start(self.input_filter.instructions)
                 elif rc.op == IPCTypes.LOG_MESSAGE:
-                    self.user_instructions(rc.data.title, rc.data.message, expectResponse=False)
+                    self.user_instructions(rc.data.title, rc.data.message, expectResponse=False, highlight=False)
                 elif rc.op == IPCTypes.GET_VALUE_FROM_USER:
                     message = rc.data.message
                     info = rc.data
