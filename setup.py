@@ -45,7 +45,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'testexecutor>=0.4',
+        'testexecutor>=0.6',
         'marshmallow_dataclass>=8.5.8',
         'psycopg2-binary>=2.9.3',
         'testarchiver>=2.6.1',
