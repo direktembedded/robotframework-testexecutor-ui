@@ -87,6 +87,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self.postInputSignal.connect(self._post_input, Qt.QueuedConnection)
         self.postReadyToMonitor.connect(self._post_ready_to_monitor, Qt.QueuedConnection)
         self.postEndToMonitor.connect(self._post_end_to_monitor, Qt.QueuedConnection)
+        self.postUpdateSelector.connect(self._post_update_selector, Qt.QueuedConnection)
         self._awaiting_start = False
         if id_monitor:
             self.id_monitor = id_monitor
@@ -189,6 +190,9 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self._set_controller_data(self.controller, self.selected_tags, self.selected_suitenames)
 
     def _update_selector(self, testpath=None):
+        self.postUpdateSelector.emit(testpath)
+
+    def _post_update_selector(self, testpath=None):
         if self.controller:
             selector_test_path = self._get_test_path(testpath)
             if selector_test_path:
@@ -427,3 +431,4 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
     postInputSignal = Signal(str)
     postReadyToMonitor = Signal()
     postEndToMonitor = Signal(bool)
+    postUpdateSelector = Signal(str)
