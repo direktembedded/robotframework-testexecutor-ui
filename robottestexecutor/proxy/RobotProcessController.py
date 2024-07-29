@@ -21,7 +21,6 @@ from robottestexecutor.proxy.TestExecutorListener import TestExecutorListener
 from robottestexecutor.proxy.TestExecutorLogger import TestExecutorLogger
 from robottestexecutor.proxy.TestExecutorIPC import IPCCommands, TestExecutionInfo, IPCMessage, IPCTypes, \
     TestExecutorIPC, IPCCommand
-from test_archiver.ArchiverRobotListener import ArchiverRobotListener
 
 
 class RobotProcessController(Process):
@@ -117,6 +116,7 @@ class RobotProcessController(Process):
         success = False
         try:
             if self._db_config_file:
+                from test_archiver.ArchiverRobotListener import ArchiverRobotListener
                 self.db_listener = ArchiverRobotListener(self._db_config_file, adjust_with_system_timezone=True)
             success = True
         except FileNotFoundError as fe:
