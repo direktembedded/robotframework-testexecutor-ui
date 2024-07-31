@@ -88,6 +88,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         self.postReadyToMonitor.connect(self._post_ready_to_monitor, Qt.QueuedConnection)
         self.postEndToMonitor.connect(self._post_end_to_monitor, Qt.QueuedConnection)
         self.postUpdateSelector.connect(self._post_update_selector, Qt.QueuedConnection)
+        self.postMonitorErrorSignal.connect(self._receive_id_monitor_error, Qt.QueuedConnection)
         self._awaiting_start = False
         if id_monitor:
             self.id_monitor = id_monitor
@@ -223,11 +224,20 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         if self.id_monitor:
             self.id_monitor.end_suite(result)
 
+    def _receive_id_monitor_error(self, error):
+        self.async_instructions("Id Monitor Error", str(error), callback=self._error_accepted, control=["Ok"])
+
     def _id_monitor_input(self, input):
         """
         Relay via queued signal to ensure synchronous communications with monitor
         """
         self.postInputSignal.emit(input)
+
+    def _id_monitor_error(self, error):
+        """
+        Relay via queued signal to ensure synchronous communications with monitor
+        """
+        self.postMonitorErrorSignal.emit(error)
 
     def _id_input_filter(self, input):
         ready = False
@@ -300,7 +310,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
 
     def _start_monitor(self):
         if self.id_monitor and not self._exited:
-            self.id_monitor.start(input_callback=self._input_filter)
+            self.id_monitor.start(input_callback=self._input_filter, error_callback=self._id_monitor_error)
 
     def _set_controller_data(self, controller, include_tags=[], suitenamesin=[], test_path=None):
         """
@@ -432,3 +442,4 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
     postReadyToMonitor = Signal()
     postEndToMonitor = Signal(bool)
     postUpdateSelector = Signal(str)
+    postMonitorErrorSignal = Signal(str)
