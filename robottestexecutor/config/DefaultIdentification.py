@@ -21,7 +21,7 @@ from testexecutor.model.KeyValueModel import KeyValue
 class DefaultIdentification:
     def __init__(self, id_config, id_data):
         self._identifiers = id_config.identifiers
-        self._id_confing = id_config
+        self._id_config = id_config
         for id in self._identifiers:
             id_data.add(id.key, KeyValue(id.name, ""), id.possibles)
 
@@ -66,7 +66,7 @@ class DefaultIdentification:
 
     def get_instructions(self, id_data, rel_path):
         instruction = None
-        suites_config = self._id_confing.suites
+        suites_config = self._id_config.suites
         if suites_config:
             for choice in suites_config.selector:
                 for _id in self._identifiers:
