@@ -28,13 +28,13 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="robotframework-testexecutor",
+    name="robotframework-testexecutor-ui",
     version=VERSION,
     description="This module is a library which provides a test runner using Robot Framework and controller using Test Executor™. TestArchiver ArchiverRobotListener can be used to archive the test results.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    package_data={'robotframework-testexecutor': ['VERSION']},
+    package_data={'robotframework-testexecutor-ui': ['VERSION']},
     url="https://www.direktembedded.com",
     license_files=("LICENSE", "NOTICE"),
     classifiers=[
