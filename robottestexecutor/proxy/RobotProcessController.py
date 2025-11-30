@@ -105,7 +105,7 @@ class RobotProcessController(Process):
         if not source:
             error = "Test Suite is not defined"
         elif not os.path.isfile(source) and not os.path.isdir(source):
-            error = f"Test Suite is not a file {source}"
+            error = f"Test Suite is not a file or directory {source}"
         else:
             success = True
         if not success:
