@@ -368,7 +368,7 @@ class TestExecutorController(TestExecutorListener, TestSuiteModel):
         table_records = {}
         if self.instance_table_records:
             table_records = copy.deepcopy(self.instance_table_records)
-        test_path = self._get_test_path(table_records)
+        test_path = self._get_test_path(self.base_test_path)
         variables, unique_ids = self._get_identifier_variables(table_records)
         if table_records:
             for table, fields in table_records.items():
