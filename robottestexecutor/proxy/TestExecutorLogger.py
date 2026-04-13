@@ -13,11 +13,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import importlib.util
+
 from robot.output.loggerhelper import LEVELS
 from robottestexecutor.proxy.TestExecutorIPC import TestExecutorIPC, IPCMessage, IPCTypes
 
 
-class TestExecutorLogger:
+def module_exists(module_name):
+    spec = importlib.util.find_spec(module_name)
+    return spec is not None
+
+
+if module_exists('robot.output.loggerapi'):
+    # RF v7 introduced different logger, so adjust for older and newer RF
+    from robot.output.loggerapi import LoggerApi as LogApi
+else:
+    from builtins import object as LogApi
+
+
+class TestExecutorLogger(LogApi):
     """
     A proxy robot framework logger which sends respective logged message to the TestExecutor Controller via an IPC
     message.
@@ -32,12 +46,16 @@ class TestExecutorLogger:
     def __init__(self, connection):
         self.connection = connection
 
-    def start_suite(self, suite):
+    def start_suite(self, suite, result=None):
         #TODO Could send through the suite tests, so test results could be pre-populated
         pass
 
-    def end_suite(self, suite):
-        failed = [err for err in suite.tests if not err.passed]
+    def end_suite(self, suite, result=None):
+        if result:
+            tests = result.tests
+        else:
+            tests = suite.tests  # pre RF v7 results were in suite.tests
+        failed = [tc for tc in tests if not tc.passed]
         if len(failed) > 0:
             summary = ["{0}: {1}".format(t.name, t.message) for t in failed]
             self.connection.send(TestExecutorIPC(IPCTypes.LOG_MESSAGE, IPCMessage("Failed", summary)))
