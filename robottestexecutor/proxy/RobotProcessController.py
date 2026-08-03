@@ -37,6 +37,10 @@ class RobotProcessController(Process):
     def process(self, connection):
         self.running = True
         while self.running:
+            self._loop_process(connection)
+
+    def _loop_process(self, connection):
+        try:
             if connection.poll(1):
                 rc = connection.recv()
                 if isinstance(rc, IPCCommand):
@@ -65,6 +69,8 @@ class RobotProcessController(Process):
                             self._process(connection, source, suites, tests, includes, variables, unique_ids)
                     elif rc.op == IPCCommands.TERMINATE:
                         self.running = False
+        except KeyboardInterrupt:
+            self.running = False
 
     def _process(self, connection, source, suites, tests, includes, variables, unique_ids):
         self._try_init_db(connection)
